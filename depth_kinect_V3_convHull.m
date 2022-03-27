@@ -1,0 +1,612 @@
+%Infos: para executar esse programa, é necessário instalar as dependências:
+%       1 - image aquisition toolbox;
+%       2 - kinect for matlab package;
+
+%27/02/2022 - foi implementado a construção da pt a partir dos slices.
+%             ERROr: existe um erro na entrada de dados enviada ao convexhull que impede o
+%                    programa de continuar.
+%                    resolvido: era um valor invalido de nan
+
+%Paso 0: chamada de funções
+method_1_frame_by_frame();
+
+
+
+function method_1_frame_by_frame()
+    %Pt1: mostrando algumas informações dos sensores 
+        x = "\ninformação dos adaptadores instalados\n"
+        imaqhwinfo
+        x = "\n*************************************"
+        imaqhwinfo('kinect')
+        imaq.VideoDevice('kinect',1)
+
+    %****************************************************
+    %comentei umas partes para usar a workspace, descomente para voltar a tempo
+    %real
+
+    %PT2: Criando instancia dos objetos de cor e profundidade do kinect*********
+        colorDevice = imaq.VideoDevice('kinect',1);
+        depthDevice = imaq.VideoDevice('kinect',2);
+    %************************************************************
+
+    %PT3: inicializa a camera:
+        colorDevice();
+        depthDevice();
+    %********************************
+
+    %PT4: captura 1 frame do kinect para inicializar
+        colorImage = colorDevice();
+        depthImage = depthDevice();
+    %********************************
+
+    %Pt5: extrai a point cloud
+    %essa é uma instancia da class pointCloud, gerada com os dados xyzPoints 
+    %contruidos na pcfromkinect. ele contem diversos parametros
+    %o parametro location é a matriz m-by-n-by-3 que são os pontos
+
+        %ptCloud = pcfromkinect(depthDevice, depthImage,colorImage);
+        ptCloud = pcfromkinect(depthDevice, depthImage);
+
+
+    %teste para verificar os pontos
+%     x="matriz de pontos"
+%     xyzPoints = ptCloud.Location(1:50,1:50,:);
+%     xyzPoints = ~isnan(xyzPoints(:,:,:)); %retorna uma matriz com valores lógicos
+
+    %definindo uma região de interesse para evitar coletar outliers dos cantos
+    %roi= [-0.3, 0.2, -0.3, 0.3, 0, inf]
+    %roi= [-0.3, 0.1, -0.2, 0.2, 0, inf] %--> área adequada (original)
+    %roi= [-0.2, 0.0, -0.103, 0.12, 0, inf]
+    roi= [-0.2, 0.1, -0.01, 0, 0, inf] %--> teste para limitar scanneamento (slice)
+
+    %PT6: plotando a point cloud para visualização
+        plotPointCloud(colorDevice,depthDevice,0,roi)
+
+
+
+    %PT&: extraindo as dimensões do objeto pela point cloud
+     %ROI ajustado: [-0.3, 0.1, -0.2, 0.2, 0, inf]
+     %[hight, width, depth,ptCloudB] = pc_Object_Dimension_Extract_OP2(ptCloud,1.1,roi)
+     
+     [hight, width, depth,ptCloudB] = pc_Object_Dimension_scanner(1.1,roi,depthDevice,colorDevice,"scanner",5/100);
+     hight
+     width
+     depth
+     %%calculando altura, largura, profundidade e volume
+
+     roi
+     Hight_b_cm = (hight(2)-hight(1))*100
+     Width_b_cm = (width(2)-width(1))*100
+     Depth_b_cm = (depth(2)-depth(1))*100
+     Volume_m3 = (Hight_b_cm/100) * (Width_b_cm/100) * (Depth_b_cm/100)
+
+
+     %visualizando imagem de profundidade
+        title('imagem RGB')
+        imshow(colorImage);
+        figure();
+        
+        title('imagem de profundidade')
+        imshow(255*(depthImage>255))
+        
+        
+        
+
+
+
+      %PT8:
+      %para que não ocorra um erro em uma nova execução tem que para a
+      %aquisição de,frames uma forma de fazer isso é deletando os objetos de
+      %aquisição instanciados
+        delete(colorDevice);
+        delete(depthDevice);
+
+
+      %plotando point cloud estátiva
+        plotPointCloud_Static(ptCloudB);
+
+      %aplicando convex hull na ptCloud
+       %[k2,av2] = convexhull_ptCloud(ptCloud,1.1,roi)
+        %[k2,av2]=convexhull_ptCloud_matriz_coluna(ptCloudB,1.1,roi);
+        %av2
+
+ 
+ end
+ 
+ 
+ 
+%*********************************************************************
+ 
+ 
+ function method_2_environment_variables()
+ 
+    %pegando o variável do workspace
+    ptCloud = evalin('base','ptCloud');
+
+    %teste para verificar os pontos
+    x="matriz de pontos"
+    xyzPoints = ptCloud.Location(1:50,1:50,:);
+    xyzPoints = ~isnan(xyzPoints(:,:,:)); %retorna uma matriz com valores lógicos
+
+    %definindo uma região de interesse para evitar coletar outliers dos cantos
+    %roi= [-0.3, 0.2, -0.3, 0.3, 0, inf]
+    %roi= [-0.3, 0.1, -0.2, 0.2, 0, inf] --> original
+    roi= [-0.2, 0.0, -0.103, 0.12, 0, inf]
+    %roi= [-0.2, 0.0, -0.99, 0.0, 0, inf] %--> teste para limitar scanneamento
+
+    %plotando point cloud estátiva
+        plotPointCloud_Static(ptCloud);
+
+
+     %ROI ajustado: [-0.3, 0.1, -0.2, 0.2, 0, inf]
+     [hight, width, depth,ptCloudB] = pc_Object_Dimension_Extract_OP2(ptCloud,1.1,roi)
+
+     %%calculando altura, largura, profundidade e volume
+
+     Hight_b_cm = (hight(2)-hight(1))*100
+     Width_b_cm = (width(2)-width(1))*100
+     Depth_b_cm = (depth(2)-depth(1))*100
+     Volume_m3 = (Hight_b_cm/100) * (Width_b_cm/100) * (Depth_b_cm/100)
+
+
+     %visualizando imagem de profundidade
+    %     title('imagem RGB')
+    %     imshow(colorImage);
+    %     figure();
+    %     imshow(255*(depthImage>255))
+    %     title('imagem de profundidade')
+
+
+      %plotando point cloud estática
+        plotPointCloud_Static(ptCloudB);
+
+      %aplicando convex hull na ptCloud
+       %[k2,av2] = convexhull_ptCloud(ptCloud,1.1,roi)
+        [k2,av2]=convexhull_ptCloud_matriz_coluna(ptCloudB,1.1,roi);
+        av2
+ end
+ 
+ 
+ 
+ 
+ 
+ 
+%função para visualizar a pont cloud em tempo real
+function plotPointCloud(colorDevice,depthDevice, color,roi)
+%captura 1 framde do kinect
+colorImage = colorDevice();
+depthImage = depthDevice();
+%********************************
+
+% Initialize a player to visualize 3-D point cloud data. The axis is
+% set appropriately to visualize the point cloud from Kinect.
+  ptCloud = pcfromkinect(depthDevice, depthImage, colorImage);
+
+  player = pcplayer(ptCloud.XLimits, ptCloud.YLimits, ptCloud.ZLimits,...
+              'VerticalAxis', 'y', 'VerticalAxisDir', 'down');
+
+  xlabel(player.Axes, 'X (m)');
+  ylabel(player.Axes, 'Y (m)');
+  zlabel(player.Axes, 'Z (m)');
+  
+  %%Acquire and view Kinect point cloud data.
+  while (isOpen(player))
+     colorImage = colorDevice();
+     depthImage = depthDevice();
+
+     if(color)
+        ptCloud = pcfromkinect(depthDevice, depthImage, colorImage);
+     else
+        ptCloud = pcfromkinect(depthDevice, depthImage);
+     end
+     
+     if(size(roi,1)~=0)
+        %ROI ajustado: [-0.3, 0.2, -0.3, 0.3, 0, inf]
+         indices = findPointsInROI(ptCloud,roi);
+         ptCloudB = select(ptCloud, indices);
+         view(player, ptCloudB);
+     else
+        %imprime o valor de um ponto no centro da depthImage para aferir a
+        %distancia
+        %ptCloud.Location(212,256,:)
+         view(player, ptCloud);
+     end
+  end
+end
+ 
+function plotPointCloud_Static(ptCloud)
+
+  player = pcplayer(ptCloud.XLimits, ptCloud.YLimits, ptCloud.ZLimits,...
+              'VerticalAxis', 'y', 'VerticalAxisDir', 'down');
+
+  xlabel(player.Axes, 'X (m)');
+  ylabel(player.Axes, 'Y (m)');
+  zlabel(player.Axes, 'Z (m)');
+  while (isOpen(player))
+    view(player, ptCloud);
+  end
+end
+
+
+%*************************************
+% função que rastreia a matriz de pontos linha por linha
+% background_Distance: é utilizado para verificar qualquer saliencia 
+%                      no eixo Z, que significa a presença de um objeto
+% hight: é a altura do objeto, tem um valor min e max, que são os pontos da
+%        extremidade do objeto
+%width: largura do objeto, tem um valor min e max, que são os pontos das
+%       extremidados orizontais do objeto;
+%length: é o comprimento do é o maior valor encontrado no objeto para o
+%        eixo z
+
+%matriz MxNxK
+function [hight, width, depth] = pc_Object_Dimension_Extract(ptCloud,background_Distance,roi)
+    
+    %coletando a matriz de pontos
+    indices = findPointsInROI(ptCloud, roi);
+    ptCloudB = select(ptCloud, indices);
+    
+    xyzPoints = ptCloudB.Location;
+    
+    %limpando a matriz de pontos (tirar valores invalidos)
+    %xyzPoints = ~isnan(xyzPoints(:,:,:));
+    
+    width=[0,0];  %x
+    hight=[0,0];  %y
+    depth=[0,background_Distance]; %z
+    
+    for i=1:size(xyzPoints,1)
+        for j=1:size(xyzPoints,2)
+            %xyzPoints(i,j,3)
+           if(xyzPoints(i,j,3)<background_Distance)
+               
+               %Rastreia o comprimento
+               if(xyzPoints(i,j,3)<depth(1) || depth(1)==0)
+                   depth(1)=xyzPoints(i,j,3);
+               end
+               
+               %Rastreia a largura
+               if(width(1)==0)
+                   width(1)=xyzPoints(i,j,1);
+               elseif(xyzPoints(i,j,1)>width(2))
+                   width(2)=xyzPoints(i,j,1);
+               end
+               
+               %Rastreia a altura
+               if(hight(1)==0)
+                   hight(1)=xyzPoints(i,j,2);
+               elseif(xyzPoints(i,j,2)>hight(2))
+                   hight(2)=xyzPoints(i,j,2);
+               end
+           end
+        end
+    end
+
+
+end
+  
+
+%Vetor coluna
+function [hight, width, depth,ptCloudB] = pc_Object_Dimension_Extract_OP2(ptCloud,background_Distance,roi)
+    
+    %coletando a matriz de pontos
+    indices = findPointsInROI(ptCloud, roi);
+    ptCloudB = select(ptCloud, indices);
+    
+    xyzPoints = ptCloudB.Location;
+    
+    %limpando a matriz de pontos (tirar valores invalidos)
+    %xyzPoints = ~isnan(xyzPoints(:,:,:));
+    
+    width=[0,0];  %x
+    hight=[0,0];  %y
+    depth=[0,background_Distance]; %z
+    
+    for i=1:size(xyzPoints,1)
+
+           if(xyzPoints(i,3)<background_Distance)
+               
+               %Rastreia a profundidade 
+               if(xyzPoints(i,3)<depth(1) || depth(1)==0)
+                   depth(1)=xyzPoints(i,3);
+               end
+               
+               %Rastreia a largura
+               if(width(1)==0)
+                   width(1)=xyzPoints(i,1);
+               elseif(xyzPoints(i,1)>width(2));
+                   width(2)=xyzPoints(i,1);
+               end
+               
+               %Rastreia a altura
+               if(hight(1)==0)
+                   hight(1)=xyzPoints(i,2);
+               elseif(xyzPoints(i,2)>hight(2));
+                   hight(2)=xyzPoints(i,2);
+               end
+           end
+        
+    end
+
+
+end
+
+
+
+%função para coletar dados de dimensões em tempo real, na esteira
+% A ideia é utilizar a mesma lógica da função estática, porém coletando
+% frames de point cloud de acordo com uma taxa de amostragem. Alguns 
+% requisitos são os seguinte:
+%   * Definir um roi que seja curto e tenha uma boa largura, para coletar
+%     slices da point cloud;
+%   * O objeto está em movimento na esteira, é necessário coletar
+%     informações de X,Y e Z, para cada slice identificar quando o objeto
+%     passou por completo pela area de ação definida com o roi
+%           - Pode-se utilizar o taxa de amostragem para fazer essa
+%           verificação, por exemplo:
+%              .EX: if(Numero_Amostras==3 && Objeto_Não_Presente) -->
+%              assume que o objeto passou pelo "scanner" --> retorna dados
+%   * é preciso definir uma taxa de amostagem global e utilizar um delay
+%     para simular função: pause(n), n é em segundos
+%   * Obs: a forma de obeter hight é diferente nesse caso. É necessário
+%   levar em conta que a área de scanner é fixa e o objeto que se move,
+%   logo, as seguintes 3 situações ocorrem:
+%            - Situação 1: o Z se obtem como da forma anterior;
+%            - Situação 2: o X se obtem como da forma anterior;
+%            - Situação 3: o Y, deve ser obtido somando os passos (steps) da
+%                          amostragem enquanto existir objeto na área do
+%                          scanner.
+%
+%Para o convexhull: 
+% estratégia 1: para aplicá-lo é necessário coletar os slices e iterativamente 
+%               concatenar a matrix para forma uma point cloud total do obj
+% estratégia 2: aplicar o convex, slice por slice, e somar o volume de
+%               todos eles para objeter o volume final do objeto
+
+
+function [hight, width, depth,ptCloudB] = pc_Object_Dimension_scanner(background_Distance,roi_Slice,depthDevice,colorDevice, method,step)
+    
+    sample_rate = 10; %HZ
+    step=0.01; %m/s
+    %step = step/sample_rate; 
+    width=[0,0];  %x
+    hight=[0,0];  %y
+    depth=[0,background_Distance]; %z
+    
+    dimensions_Check=0;
+    break_flag=0;
+    
+    ptCloud_of_the_object_interated=[nan nan nan];
+    
+    number_of_steps = 1;
+    
+    while(break_flag<=5)
+        
+        %coletando frames da matriz de pontos
+        ptCloudB = aply_roi_PtCloud(get_Pt_Cloud_Frame(depthDevice,colorDevice,0),roi_Slice);
+        xyzPoints = ptCloudB.Location;
+        
+        [hight, width, depth,is_there_Object] = get_Object_dimensions_to_ptc_column(xyzPoints, hight, width, depth,method,step);
+        
+        if(is_there_Object)
+            dimensions_Check=0;
+            break_flag=0;
+            ptCloud_of_the_object_interated(1,:) = xyzPoints(1,:);
+            ptCloud_of_the_object_interated = [ptCloud_of_the_object_interated;
+                                              (xyzPoints(:,:) + [0 (step*number_of_steps) 0])];
+                                          
+            number_of_steps = number_of_steps + 1;
+        elseif(dimensions_Check>=3)
+            
+            show_Dimentions_and_convexhull(width, hight, depth, ptCloud_of_the_object_interated, background_Distance)
+            ptCloud_of_the_object_interated=[nan nan nan];
+            
+            break_flag = break_flag + 1;
+            number_of_steps=0;
+      
+           
+        else
+            dimensions_Check=dimensions_Check+1;
+        end
+        
+        pause(1/sample_rate); %amostragem
+        
+    end
+    
+    
+    %para que não ocorra um erro em uma nova execução tem que parar a
+    %aquisição de frames. uma forma de fazer isso é deletando os objetos de
+    %aquisição instanciados
+      delete(colorDevice);
+      delete(depthDevice);
+end
+
+function [number] = meters_to_centimeters(number)
+    number=number*100;
+end
+
+function show_Dimentions_and_convexhull(width, hight, depth, ptCloud_of_the_object_interated, background_Distance)
+    disp("As Dimensões do objeto são: ");
+    Hight_b_cm = meters_to_centimeters((hight(2)-hight(1)))
+    Width_b_cm = meters_to_centimeters((width(2)-width(1)))
+    Depth_b_cm = meters_to_centimeters((depth(2)-depth(1)))
+    Volume_m3 = (Hight_b_cm/100) * (Width_b_cm/100) * (Depth_b_cm/100)
+            
+    if(~isnan(ptCloud_of_the_object_interated(1,:)))
+         [k2,av2] = convexhull_ptCloud_matriz_coluna(ptCloud_of_the_object_interated, background_Distance, depth, 0);
+         av2
+    end
+end
+
+
+
+function [hight, width, depth,is_there_Object] = get_Object_dimensions_to_ptc_column(xyzPoints, hight, width, depth, method,step)
+     
+     is_there_Object = 0;
+     did_it_get_a_step = 0;
+     for i=1:size(xyzPoints,1)
+
+               if(xyzPoints(i,3)<depth(2))
+                   is_there_Object = 1;
+                   %Rastreia a profundidade 
+                   if(xyzPoints(i,3)<depth(1) || depth(1)==0)
+                       depth(1)=xyzPoints(i,3);
+                   end
+
+                   %Rastreia a largura
+                   if(xyzPoints(i,1) < width(1) || width(1)==0)
+                       width(1)= xyzPoints(i,1);
+                   elseif(xyzPoints(i,1)>width(2))
+                       width(2)=xyzPoints(i,1);
+                   end
+
+                   %Rastreia a altura
+                   if(method=="scanner" && ~did_it_get_a_step)
+                       hight(2)= hight(2) + step;
+                       did_it_get_a_step=1;
+                   elseif(method~="scanner")
+                       hight = get_hight(high);
+                   end
+               end
+     end
+     
+end
+
+function [hight] = get_hight(high)
+     if(hight(1)==0)
+        hight(1)=xyzPoints(i,2);
+     elseif(xyzPoints(i,2)>hight(2));
+        hight(2)=xyzPoints(i,2);
+     end
+end
+
+
+
+function [ptCloudB] = aply_roi_PtCloud(ptCloud,roi)
+    indices = findPointsInROI(ptCloud, roi);
+    ptCloudB = select(ptCloud, indices);
+end
+
+function [k2,av2] = convexhull_ptCloud_MxN(ptCloud,background_Distance,roi)
+
+xyzPoints = ptCloud.Location;
+x(1:size(xyzPoints,1)*size(xyzPoints,2))=0;
+y(1:size(xyzPoints,1)*size(xyzPoints,2))=0;
+z(1:size(xyzPoints,1)*size(xyzPoints,2))=0;
+
+indice_vetor=1;
+for i=1:size(xyzPoints,1)
+    for j=1:size(xyzPoints,2)
+        if(~isnan(xyzPoints(i,j,:)))
+        x(indice_vetor)=xyzPoints(i,j,1);
+        y(indice_vetor)=xyzPoints(i,j,2);
+        z(indice_vetor)=xyzPoints(i,j,3);
+        indice_vetor = indice_vetor+1;
+        end
+    end
+end
+
+[k2,av2] = convhull(x,y,z,'Simplify',true);
+trisurf(k2,x,y,z,'FaceColor','cyan')
+axis equal
+
+end
+
+function [k2,av2] = convexhull_ptCloud_matriz_coluna(ptCloud,background_Distance,depth,roi)
+
+ ptCloud = ptCloud_processing(ptCloud, background_Distance, depth);
+
+[x,y,z] = format_Data(ptCloud);
+[k2,av2] = convhull(x,y,z,'Simplify',true);
+
+%[k2,av2] = convhull(xyzPoints(:,1),xyzPoints(:,2),xyzPoints(:,3),'Simplify',true);
+
+show_convexhull(k2,x,y,z,'FaceColor','cyan')
+
+end
+
+
+function [x,y,z] = format_Data(ptCloud)
+    
+   xyzPoints = get_ptCloud_matrix(ptCloud);
+
+    x(1:size(xyzPoints,1))=0;
+    y(1:size(xyzPoints,1))=0;
+    z(1:size(xyzPoints,1))=0;
+
+    indice_vetor=1;
+    for i=1:size(xyzPoints,1)
+        if(~isnan(xyzPoints(i,:)))
+            x(indice_vetor)=xyzPoints(i,1);
+            y(indice_vetor)=xyzPoints(i,2);
+            z(indice_vetor)=xyzPoints(i,3);
+            indice_vetor = indice_vetor+1;
+        end
+    end
+end
+
+function [xyzPoints] = get_ptCloud_matrix(ptCloud)
+    if(isobject(ptCloud))
+        xyzPoints = ptCloud.Location;
+    else
+        xyzPoints = ptCloud;
+    end
+end 
+
+function show_convexhull(k2,x,y,z,FaceColor,color)
+    trisurf(k2,x,y,z,FaceColor,color);
+    figure();
+    axis equal;
+end
+
+function [ptCloud] = get_Pt_Cloud_Frame(depthDevice,colorDevice, color)
+     if(color)
+        depthImage = depthDevice();
+        colorImage = colorDevice();
+        ptCloud = pcfromkinect(depthDevice, depthImage, colorImage);
+     else
+        depthImage = depthDevice();
+        ptCloud = pcfromkinect(depthDevice, depthImage);
+     end
+end
+
+%o processo é feito em dois passo:
+%   1- corta o fundo usando a medida conhecida background_Distance
+%   2- pega o ponto da matriz obtida na amostragem e reflete ele na base.
+%   somando a coordenada Z da profundidade do objeto. isso vai espelhar
+%   a superfície do mesmo na base e permitir que o convexhull obtenha o
+%   volume total do objeto
+function [xyzPoints_result] = ptCloud_processing(ptCloud, background_Distance, depth)
+    
+    xyzPoints = get_ptCloud_matrix(ptCloud);
+    xyzPoints_result = [0 0 0];
+    
+    cut_value = 0.01;
+    
+    for i=1:size(xyzPoints,1)
+        if(~isnan(xyzPoints(i,:)))
+            if((xyzPoints(i,3) <= (background_Distance - cut_value)))
+                xyzPoints_result = [xyzPoints_result; xyzPoints(i,:); (xyzPoints(i,:)+[0 0 depth(1)])];
+            end
+        end
+    end
+    xyzPoints_result(1,:) = xyzPoints_result(2,:);
+end
+
+ %   Example : Find points within a given cuboid
+            %   -------------------------------------------
+            %   % Create a point cloud object with randomly generated points
+            %   ptCloudA = pointCloud(100*rand(1000, 3, 'single'));
+            %
+            %   % Define a cuboid
+            %   roi = [0, 50, 0, inf, 0, inf];
+            %
+            %   % Get all the points within the cuboid
+            %   indices = findPointsInROI(ptCloudA, roi);
+            %   ptCloudB = select(ptCloudA, indices);
+            %
+            %   pcshow(ptCloudA.Location, 'r');
+            %   hold on;
+            %   pcshow(ptCloudB.Location, 'g');
+            %   hold off;
+  
