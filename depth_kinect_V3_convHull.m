@@ -55,9 +55,9 @@ function method_1_frame_by_frame()
 
     %definindo uma região de interesse para evitar coletar outliers dos cantos
     %roi= [-0.3, 0.2, -0.3, 0.3, 0, inf]
-    %roi= [-0.3, 0.1, -0.2, 0.2, 0, inf] %--> área adequada (original)
+    %roi= [-0.3, 0.1, -0.3, 0.3, 0, inf] %--> área adequada (original)
     %roi= [-0.2, 0.0, -0.103, 0.12, 0, inf]
-    roi= [-0.2, 0.1, -0.01, 0, 0, inf] %--> teste para limitar scanneamento (slice)
+    roi= [-0.3, 0.2, -0.01, 0, 0, inf] %--> teste para limitar scanneamento (slice)
 
     %PT6: plotando a point cloud para visualização
         plotPointCloud(colorDevice,depthDevice,0,roi)
@@ -286,7 +286,7 @@ function [hight, width, depth] = pc_Object_Dimension_Extract(ptCloud,background_
 end
   
 
-%Vetor coluna
+%Matix Mx3
 function [hight, width, depth,ptCloudB] = pc_Object_Dimension_Extract_OP2(ptCloud,background_Distance,roi)
     
     %coletando a matriz de pontos
@@ -404,7 +404,6 @@ function [hight, width, depth,ptCloudB] = pc_Object_Dimension_scanner(background
             break_flag = break_flag + 1;
             number_of_steps=0;
       
-           
         else
             dimensions_Check=dimensions_Check+1;
         end
@@ -433,7 +432,7 @@ function show_Dimentions_and_convexhull(width, hight, depth, ptCloud_of_the_obje
     Volume_m3 = (Hight_b_cm/100) * (Width_b_cm/100) * (Depth_b_cm/100)
             
     if(~isnan(ptCloud_of_the_object_interated(1,:)))
-         [k2,av2] = convexhull_ptCloud_matriz_coluna(ptCloud_of_the_object_interated, background_Distance, depth, 0);
+         [k2,av2] = convexhull_ptCloud_matriz_coluna(ptCloud_of_the_object_interated, background_Distance, depth);
          av2
     end
 end
@@ -487,7 +486,7 @@ function [ptCloudB] = aply_roi_PtCloud(ptCloud,roi)
     ptCloudB = select(ptCloud, indices);
 end
 
-function [k2,av2] = convexhull_ptCloud_MxN(ptCloud,background_Distance,roi)
+function [k2,av2] = convexhull_ptCloud_MxN(ptCloud)
 
 xyzPoints = ptCloud.Location;
 x(1:size(xyzPoints,1)*size(xyzPoints,2))=0;
@@ -512,9 +511,9 @@ axis equal
 
 end
 
-function [k2,av2] = convexhull_ptCloud_matriz_coluna(ptCloud,background_Distance,depth,roi)
+function [k2,av2] = convexhull_ptCloud_matriz_coluna(ptCloud,background_Distance,depth)
 
- ptCloud = ptCloud_processing(ptCloud, background_Distance, depth);
+ ptCloud = ptCloud_processing(ptCloud, background_Distance, 0.01, depth);
 
 [x,y,z] = format_Data(ptCloud);
 [k2,av2] = convhull(x,y,z,'Simplify',true);
@@ -576,21 +575,25 @@ end
 %   somando a coordenada Z da profundidade do objeto. isso vai espelhar
 %   a superfície do mesmo na base e permitir que o convexhull obtenha o
 %   volume total do objeto
-function [xyzPoints_result] = ptCloud_processing(ptCloud, background_Distance, depth)
+function [xyzPoints_result] = ptCloud_processing(ptCloud, background_Distance, cut_value, depth)
     
     xyzPoints = get_ptCloud_matrix(ptCloud);
     xyzPoints_result = [0 0 0];
     
-    cut_value = 0.01;
+    xyzPoints_Amount_rows = size(xyzPoints,1);
     
-    for i=1:size(xyzPoints,1)
+    for i=1:xyzPoints_Amount_rows
         if(~isnan(xyzPoints(i,:)))
             if((xyzPoints(i,3) <= (background_Distance - cut_value)))
-                xyzPoints_result = [xyzPoints_result; xyzPoints(i,:); (xyzPoints(i,:)+[0 0 depth(1)])];
+                %xyzPoints_result = [xyzPoints_result; xyzPoints(i,:); (xyzPoints(i,:)+[0 0 depth(1)])];
+                xyzPoints_result = [xyzPoints_result; xyzPoints(i,:); [xyzPoints(i,1) xyzPoints(i,2)  background_Distance]];
             end
         end
     end
-    xyzPoints_result(1,:) = xyzPoints_result(2,:);
+    
+    if(xyzPoints_Amount_rows>=2)
+        xyzPoints_result(1,:) = xyzPoints_result(2,:);
+    end
 end
 
  %   Example : Find points within a given cuboid
