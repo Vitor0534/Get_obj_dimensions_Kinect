@@ -55,20 +55,26 @@ function method_1_frame_by_frame()
 
     %definindo uma região de interesse para evitar coletar outliers dos cantos
     %roi= [-0.3, 0.2, -0.3, 0.3, 0, inf]
-    %roi= [-0.3, 0.1, -0.3, 0.3, 0, inf] %--> área adequada (original)
+    %roi= [-0.3, 0.1, -0.3, 0.3, 0, inf] %--> área adequada (original - sem esteira)
+    %roi= [-0.28, 0.08, -0.2, 0.2, 0, inf] %--> área adequada (original - com esteira)
     %roi= [-0.2, 0.0, -0.103, 0.12, 0, inf]
-    roi= [-0.3, 0.2, -0.01, 0, 0, inf] %--> teste para limitar scanneamento (slice)
-
+    %roi= [-0.3, 0.2, -0.01, 0, 0, inf] %--> teste para limitar scanneamento (slice - sem esteira)
+    roi= [-0.2, 0.13, -0.01, 0, 0, inf] %--> teste para limitar scanneamento (slice - com esteira)
+    
+    background_Distance = 1.1;
+    
+    
     %PT6: plotando a point cloud para visualização
-        plotPointCloud(colorDevice,depthDevice,0,roi)
+        plotPointCloud(colorDevice,depthDevice,0,roi);
 
 
 
-    %PT&: extraindo as dimensões do objeto pela point cloud
+    %PT 7: extraindo as dimensões do objeto pela point cloud
      %ROI ajustado: [-0.3, 0.1, -0.2, 0.2, 0, inf]
-     %[hight, width, depth,ptCloudB] = pc_Object_Dimension_Extract_OP2(ptCloud,1.1,roi)
+     %[hight, width, depth,ptCloudB] = pc_Object_Dimension_Extract_OP2(ptCloud,background_Distance,roi);
      
-     [hight, width, depth,ptCloudB] = pc_Object_Dimension_scanner(1.1,roi,depthDevice,colorDevice,"scanner",5/100);
+     [hight, width, depth,ptCloudB] = pc_Object_Dimension_scanner(background_Distance,roi,depthDevice,colorDevice,"scanner",5/100);
+     
      hight
      width
      depth
@@ -96,7 +102,7 @@ function method_1_frame_by_frame()
 
       %PT8:
       %para que não ocorra um erro em uma nova execução tem que para a
-      %aquisição de,frames uma forma de fazer isso é deletando os objetos de
+      %aquisição de frames uma forma de fazer isso é deletando os objetos de
       %aquisição instanciados
         delete(colorDevice);
         delete(depthDevice);
@@ -171,7 +177,7 @@ function method_1_frame_by_frame()
  
  
  
-%função para visualizar a pont cloud em tempo real
+%função para visualizar a ponit cloud em tempo real
 function plotPointCloud(colorDevice,depthDevice, color,roi)
 %captura 1 framde do kinect
 colorImage = colorDevice();
@@ -366,8 +372,8 @@ end
 
 function [hight, width, depth,ptCloudB] = pc_Object_Dimension_scanner(background_Distance,roi_Slice,depthDevice,colorDevice, method,step)
     
-    sample_rate = 10; %HZ
-    step=0.01; %m/s
+    sample_rate = 30; %HZ
+    step=0.6; %m/s
     %step = step/sample_rate; 
     width=[0,0];  %x
     hight=[0,0];  %y
@@ -380,7 +386,7 @@ function [hight, width, depth,ptCloudB] = pc_Object_Dimension_scanner(background
     
     number_of_steps = 1;
     
-    while(break_flag<=5)
+    while(break_flag<=10)
         
         %coletando frames da matriz de pontos
         ptCloudB = aply_roi_PtCloud(get_Pt_Cloud_Frame(depthDevice,colorDevice,0),roi_Slice);
@@ -485,6 +491,7 @@ function [ptCloudB] = aply_roi_PtCloud(ptCloud,roi)
     indices = findPointsInROI(ptCloud, roi);
     ptCloudB = select(ptCloud, indices);
 end
+
 
 function [k2,av2] = convexhull_ptCloud_MxN(ptCloud)
 
