@@ -29,6 +29,12 @@ function method_1_frame_by_frame()
         depthDevice = imaq.VideoDevice('kinect',2);
     %************************************************************
 
+    %configurando arduino
+        arduinoObj = arduinoService;
+        arduinoObj = arduinoObj.constructor('COM12',arduinoObj);
+        arduinoObj =  arduinoObj.setup('connect',arduinoObj);
+    
+    
     %PT3: inicializa a camera:
         colorDevice();
         depthDevice();
@@ -66,14 +72,14 @@ function method_1_frame_by_frame()
     
     %PT6: plotando a point cloud para visualização
         plotPointCloud(colorDevice,depthDevice,0,roi);
-
+    
 
 
     %PT 7: extraindo as dimensões do objeto pela point cloud
      %ROI ajustado: [-0.3, 0.1, -0.2, 0.2, 0, inf]
      %[hight, width, depth,ptCloudB] = pc_Object_Dimension_Extract_OP2(ptCloud,background_Distance,roi);
      
-     [hight, width, depth,ptCloudB] = pc_Object_Dimension_scanner(background_Distance,roi,depthDevice,colorDevice,"scanner",5/100);
+     [hight, width, depth,ptCloudB,obg_sample_amount] = pc_Object_Dimension_scanner(background_Distance,roi,depthDevice,colorDevice,"scanner",5/100,arduinoObj);
      
      hight
      width
@@ -85,7 +91,9 @@ function method_1_frame_by_frame()
      Width_b_cm = (width(2)-width(1))*100
      Depth_b_cm = (depth(2)-depth(1))*100
      Volume_m3 = (Hight_b_cm/100) * (Width_b_cm/100) * (Depth_b_cm/100)
-
+     
+     %numero de amostras retiradas do objeto
+     obg_sample_amount
 
      %visualizando imagem de profundidade
         title('imagem RGB')
@@ -370,10 +378,10 @@ end
 %               todos eles para objeter o volume final do objeto
 
 
-function [height, width, depth,ptCloudB] = pc_Object_Dimension_scanner(background_Distance,roi_Slice,depthDevice,colorDevice, method,step)
+function [height, width, depth,ptCloudB,number_of_object_samples] = pc_Object_Dimension_scanner(background_Distance,roi_Slice,depthDevice,colorDevice, method,step,arduinoObj)
     
     sample_rate = 30; %HZ
-    step=0.5; %m/s
+    step=0.05; %m/s
     %step = step/sample_rate; 
     width=[0,0];  %x
     height=[0,0];  %y
@@ -384,9 +392,12 @@ function [height, width, depth,ptCloudB] = pc_Object_Dimension_scanner(backgroun
     
     ptCloud_of_the_object_interated=[nan nan nan];
     
+   
     number_of_steps = 1;
-    
-    while(break_flag<=10)
+    number_of_object_samples = 0;
+    while(break_flag<=6)
+        
+        arduinoObj.arduinoMatControl('stop',arduinoObj);
         
         %coletando frames da matriz de pontos
         ptCloudB = aply_roi_PtCloud(get_Pt_Cloud_Frame(depthDevice,colorDevice,0),roi_Slice);
@@ -397,6 +408,7 @@ function [height, width, depth,ptCloudB] = pc_Object_Dimension_scanner(backgroun
         if(is_there_Object)
             dimensions_Check=0;
             break_flag=0;
+            number_of_object_samples = number_of_object_samples + 1;
             
             ptCloud_of_the_object_interated(1,:) = xyzPoints(1,:);
             ptCloud_of_the_object_interated = [ptCloud_of_the_object_interated;
@@ -415,7 +427,9 @@ function [height, width, depth,ptCloudB] = pc_Object_Dimension_scanner(backgroun
             dimensions_Check=dimensions_Check+1;
         end
         
-        pause(1/sample_rate); %amostragem
+        arduinoObj.arduinoMatControl('run',arduinoObj);
+        
+        pause(1.2); %amostragem
         
     end
     
@@ -423,8 +437,10 @@ function [height, width, depth,ptCloudB] = pc_Object_Dimension_scanner(backgroun
     %para que não ocorra um erro em uma nova execução tem que parar a
     %aquisição de frames. uma forma de fazer isso é deletando os objetos de
     %aquisição instanciados
-      delete(colorDevice);
-      delete(depthDevice);
+    arduinoObj.arduinoMatControl('stop',arduinoObj);
+    arduinoObj.setup('disconnect',arduinoObj);
+    delete(colorDevice);
+    delete(depthDevice);
 end
 
 function [number] = meters_to_centimeters(number)
