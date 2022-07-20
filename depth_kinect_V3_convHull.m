@@ -65,7 +65,8 @@ function method_1_frame_by_frame()
     %roi= [-0.28, 0.08, -0.2, 0.2, 0, inf] %--> área adequada (original - com esteira)
     %roi= [-0.2, 0.0, -0.103, 0.12, 0, inf]
     %roi= [-0.3, 0.2, -0.01, 0, 0, inf] %--> teste para limitar scanneamento (slice - sem esteira)
-    roi= [-0.2, 0.13, -0.01, 0, 0, inf] %--> teste para limitar scanneamento (slice - com esteira)
+    %roi= [-0.2, 0.13, -0.01, 0, 0, inf] %--> teste para limitar scanneamento (slice - com esteira)
+    roi= [-0.2, 0.13, -0.02, 0.02, 0, inf] %--> teste para limitar scanneamento (slice - com esteira)
     
     background_Distance = 1.1;
     
@@ -429,7 +430,7 @@ function [height, width, depth,ptCloudB,number_of_object_samples] = pc_Object_Di
         
         arduinoObj.arduinoMatControl('run',arduinoObj);
         
-        pause(1.2); %amostragem
+        pause(1.1); %amostragem
         
     end
     
