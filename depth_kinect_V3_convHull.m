@@ -59,7 +59,7 @@ function method_1_frame_by_frame()
     %roi= [-0.28, 0.08, -0.2, 0.2, 0, inf] %--> área adequada (original - com esteira)
     %roi= [-0.2, 0.0, -0.103, 0.12, 0, inf]
     %roi= [-0.3, 0.2, -0.01, 0, 0, inf] %--> teste para limitar scanneamento (slice - sem esteira)
-    roi= [-0.2, 0.13, -0.01, 0, 0, inf] %--> teste para limitar scanneamento (slice - com esteira)
+    roi= [-0.25, 0.18, -0.01, 0, 0, inf] %--> teste para limitar scanneamento (slice - com esteira)
     
     background_Distance = 1.1;
     
@@ -73,11 +73,12 @@ function method_1_frame_by_frame()
      %ROI ajustado: [-0.3, 0.1, -0.2, 0.2, 0, inf]
      %[hight, width, depth,ptCloudB] = pc_Object_Dimension_Extract_OP2(ptCloud,background_Distance,roi);
      
-     [hight, width, depth,ptCloudB] = pc_Object_Dimension_scanner(background_Distance,roi,depthDevice,colorDevice,"scanner",5/100);
+     [hight, width, depth,ptCloudB,number_of_Obj_samples] = pc_Object_Dimension_scanner(background_Distance,roi,depthDevice,colorDevice,"Static",5/100);
      
      hight
      width
      depth
+    
      %%calculando altura, largura, profundidade e volume
 
      roi
@@ -86,7 +87,9 @@ function method_1_frame_by_frame()
      Depth_b_cm = (depth(2)-depth(1))*100
      Volume_m3 = (Hight_b_cm/100) * (Width_b_cm/100) * (Depth_b_cm/100)
 
-
+     
+     number_of_Obj_samples
+     
      %visualizando imagem de profundidade
         title('imagem RGB')
         imshow(colorImage);
@@ -370,10 +373,10 @@ end
 %               todos eles para objeter o volume final do objeto
 
 
-function [height, width, depth,ptCloudB] = pc_Object_Dimension_scanner(background_Distance,roi_Slice,depthDevice,colorDevice, method,step)
+function [height, width, depth,ptCloudB,number_of_Obj_samples] = pc_Object_Dimension_scanner(background_Distance,roi_Slice,depthDevice,colorDevice, method,step)
     
     sample_rate = 30; %HZ
-    step=0.5; %m/s
+    step=0.05; %m/s
     %step = step/sample_rate; 
     width=[0,0];  %x
     height=[0,0];  %y
@@ -385,46 +388,67 @@ function [height, width, depth,ptCloudB] = pc_Object_Dimension_scanner(backgroun
     ptCloud_of_the_object_interated=[nan nan nan];
     
     number_of_steps = 1;
+    number_of_Obj_samples = 0;
     
-    while(break_flag<=10)
-        
-        %coletando frames da matriz de pontos
-        ptCloudB = aply_roi_PtCloud(get_Pt_Cloud_Frame(depthDevice,colorDevice,0),roi_Slice);
-        xyzPoints = ptCloudB.Location;
-        
-        [height, width, depth,is_there_Object] = get_Object_dimensions_to_ptc_column(xyzPoints, height, width, depth,method,step);
-        
-        if(is_there_Object)
-            dimensions_Check=0;
-            break_flag=0;
-            
-            ptCloud_of_the_object_interated(1,:) = xyzPoints(1,:);
-            ptCloud_of_the_object_interated = [ptCloud_of_the_object_interated;
-                                              (xyzPoints(:,:) + [0 (step*number_of_steps) 0])];
-                                          
-            number_of_steps = number_of_steps + 1;
-        elseif(dimensions_Check>=3)
-            
-            show_Dimentions_and_convexhull(width, height, depth, ptCloud_of_the_object_interated, background_Distance)
-            ptCloud_of_the_object_interated=[nan nan nan];
-            
-            break_flag = break_flag + 1;
-            number_of_steps=0;
-      
-        else
-            dimensions_Check=dimensions_Check+1;
+    try
+    
+        while(break_flag<=10)
+
+            %coletando frames da matriz de pontos
+            ptCloudB = aply_roi_PtCloud(get_Pt_Cloud_Frame(depthDevice,colorDevice,0),roi_Slice);
+            xyzPoints = ptCloudB.Location;
+
+            %[height, width, depth,is_there_Object] = get_Object_dimensions_to_ptc_column(xyzPoints, height, width, depth,method,step);
+
+            is_there_Object = check_for_object(xyzPoints, 10, background_Distance);
+
+            if(is_there_Object)
+                dimensions_Check=0;
+                break_flag=0;
+
+                ptCloud_of_the_object_interated(1,:) = xyzPoints(1,:);
+                ptCloud_of_the_object_interated = [ptCloud_of_the_object_interated;
+                                                  (xyzPoints(:,:) + [0 (step*number_of_steps) 0])];
+
+                number_of_steps = number_of_steps + 1;
+                number_of_Obj_samples = number_of_Obj_samples +1;
+
+            elseif(dimensions_Check>=3)
+
+                %show_Dimentions_and_convexhull(width, height, depth, ptCloud_of_the_object_interated, background_Distance)
+                %ptCloud_of_the_object_interated=[nan nan nan];
+
+                break_flag = break_flag + 1
+                %number_of_steps=0;
+
+            else
+                dimensions_Check=dimensions_Check+1;
+            end
+
+            pause(1/sample_rate); %amostragem
+
         end
-        
-        pause(1/sample_rate); %amostragem
-        
+
+        %ptCloud_of_the_object_interated = add_Steps_to_the_ptCloud(ptCloud_of_the_object_interated,number_of_Obj_samples+1,step);
+
+        [height, width, depth,~] = get_Object_dimensions_to_ptc_column(ptCloud_of_the_object_interated, height, width, depth,method,step, 10);
+
+        show_Dimentions_and_convexhull(width, height, depth, ptCloud_of_the_object_interated, background_Distance)
+
+        ptCloud_of_the_object_interated=[nan nan nan];
+
+        %para que não ocorra um erro em uma nova execução tem que parar a
+        %aquisição de frames. uma forma de fazer isso é deletando os objetos de
+        %aquisição instanciados
+          delete(colorDevice);
+          delete(depthDevice);
+      
+    catch error
+        disp("Erro na função: pc_Object_Dimension_scanner");
+        error
+        delete(colorDevice);
+        delete(depthDevice);
     end
-    
-    
-    %para que não ocorra um erro em uma nova execução tem que parar a
-    %aquisição de frames. uma forma de fazer isso é deletando os objetos de
-    %aquisição instanciados
-      delete(colorDevice);
-      delete(depthDevice);
 end
 
 function [number] = meters_to_centimeters(number)
@@ -444,16 +468,22 @@ function show_Dimentions_and_convexhull(width, height, depth, ptCloud_of_the_obj
     end
 end
 
+function [xyzPoints] = add_Steps_to_the_ptCloud(xyzPoints,number_of_steps,step)
 
+    for i=1:(i<=size(xyzPoints,1) && i <=number_of_steps)
+        xyzPoints(i,3) = xyzPoints(i,3) + (step*i);
+    end
+    
+end
 
-function [height, width, depth,is_there_Object] = get_Object_dimensions_to_ptc_column(xyzPoints, height, width, depth, method,step)
+function [height, width, depth,is_there_Object] = get_Object_dimensions_to_ptc_column(xyzPoints, height, width, depth, method,step,Obj_detect_precision)
      
      is_there_Object = 0;
      did_it_get_a_step = 0;
      for i=1:size(xyzPoints,1)
-
-               if(xyzPoints(i,3)<depth(2))
-                   is_there_Object = 1;
+               is_there_Object = check_for_object(xyzPoints(i,:),Obj_detect_precision,depth(2));
+               if(is_there_Object)
+                   
                    %Rastreia a profundidade 
                    if(xyzPoints(i,3)<depth(1) || depth(1)==0)
                        depth(1)=xyzPoints(i,3);
@@ -470,16 +500,24 @@ function [height, width, depth,is_there_Object] = get_Object_dimensions_to_ptc_c
                    if(method=="scanner" && ~did_it_get_a_step)
                        height(2)= height(2) + step;
                        did_it_get_a_step=1;
-                   elseif(method~="scanner")
-                       height = get_hight(height, i);
+                   else
+                       height = get_height(xyzPoints, height, i);
                    end
                end
      end
      
 end
 
-function [height] = get_hight(height, i)
-     if(height(1)==0)
+function [is_there_Object] = check_for_object(xyzPoints, precision,background_Distance)
+    is_there_Object=0;
+    is_there_Object = is_there_Object + sum(sum((xyzPoints(1:precision:size(xyzPoints,1),3)<background_Distance),'native'),'native');
+    if(is_there_Object)
+        is_there_Object=1
+    end
+end
+
+function [height] = get_height(xyzPoints, height, i)
+     if(xyzPoints(i,2) < height(1) || height(1)==0)
         height(1)=xyzPoints(i,2);
      elseif(xyzPoints(i,2)>height(2))
         height(2)=xyzPoints(i,2);
