@@ -383,7 +383,7 @@ end
 function [height, width, depth,ptCloudB,number_of_Obj_samples] = pc_Object_Dimension_scanner(background_Distance,roi_Slice,depthDevice,colorDevice, method, step, cut_value)
     
     sample_rate = 30; %HZ
-    step=0.05; %m/s
+    step=0.06; %m/s
     %step = step/sample_rate; 
     width=[0,0];  %x
     height=[0,0];  %y
@@ -413,8 +413,8 @@ function [height, width, depth,ptCloudB,number_of_Obj_samples] = pc_Object_Dimen
                 break_flag=0;
 
                 ptCloud_of_the_object_interated(1,:) = xyzPoints(1,:);
-                %Se a esteira gira no sentido horário colocar + se não
-                %colocar -
+                %Se a point cloud é adquirida no sentido horário colocar (+) se não
+                %colocar (-)
                 ptCloud_of_the_object_interated = [ptCloud_of_the_object_interated;
                                                   (xyzPoints(:,:) - [0 (step*(number_of_Obj_samples+1)) 0])];
 
@@ -520,10 +520,7 @@ end
 
 function [is_there_Object] = check_for_object(xyzPoints, precision, background_Distance, cut_value)
     is_there_Object=0;
-    is_there_Object = is_there_Object + sum(sum((xyzPoints(1:precision:size(xyzPoints,1),3) < (background_Distance-cut_value)),'native'),'native');
-    if(is_there_Object)
-        is_there_Object=1
-    end
+    is_there_Object = sum(sum((xyzPoints(1:precision:size(xyzPoints,1),3) < (background_Distance-cut_value)),'native'),'native');
 end
 
 function [height] = get_height(xyzPoints, height, i)
