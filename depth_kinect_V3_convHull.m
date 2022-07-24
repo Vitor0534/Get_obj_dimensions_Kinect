@@ -74,7 +74,7 @@ function method_1_frame_by_frame()
      %ROI ajustado: [-0.3, 0.1, -0.2, 0.2, 0, inf]
      %[hight, width, depth,ptCloudB] = pc_Object_Dimension_Extract_OP2(ptCloud,background_Distance,roi);
      
-     [hight, width, depth,ptCloudB,number_of_Obj_samples] = pc_Object_Dimension_scanner(background_Distance,roi,depthDevice,colorDevice,"Static",0.06, 0.01);
+     [hight, width, depth,ptCloudB,number_of_Obj_samples] = pc_Object_Dimension_scanner(background_Distance,roi,depthDevice,colorDevice,"Static",0.06, 0.01,5);
      
      hight
      width
@@ -380,10 +380,10 @@ end
 %               todos eles para objeter o volume final do objeto
 
 
-function [height, width, depth,ptCloudB,number_of_Obj_samples] = pc_Object_Dimension_scanner(background_Distance,roi_Slice,depthDevice,colorDevice, method, step, cut_value)
+function [height, width, depth,ptCloudB,number_of_Obj_samples] = pc_Object_Dimension_scanner(background_Distance,roi_Slice,depthDevice,colorDevice, method, step, cut_value,sample_rate)
     
-    sample_rate = 30; %HZ
-    %step=0.06; %m/s
+    sample_rate = 15; %HZ
+    step=0.06; %m/s
     %step = step/sample_rate; 
     width=[0,0];  %x
     height=[0,0];  %y
