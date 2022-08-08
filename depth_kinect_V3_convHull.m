@@ -45,7 +45,7 @@ function method_1_frame_by_frame()
     %o parametro location é a matriz m-by-n-by-3 que são os pontos
 
         %ptCloud = pcfromkinect(depthDevice, depthImage,colorImage);
-        ptCloud = pcfromkinect(depthDevice, depthImage);
+        %ptCloud = pcfromkinect(depthDevice, depthImage);
 
 
     %teste para verificar os pontos
@@ -113,7 +113,7 @@ function method_1_frame_by_frame()
         delete(depthDevice);
 
 
-      %plotando point cloud estátiva
+      %plotando point cloud estática
         plotPointCloud_Static(ptCloudB);
 
       %aplicando convex hull na ptCloud
@@ -444,7 +444,15 @@ function [height, width, depth,ptCloudB,number_of_Obj_samples] = pc_Object_Dimen
 
         show_Dimentions_and_convexhull(width, height, depth, ptCloud_of_the_object_interated, background_Distance)
         
+        
+        ptCloudInformations = get_boundingBoxInformation(ptCloud_of_the_object_interated, background_Distance, cut_value)
+        ptCloudInformations.BoundingBox
+        
+        
+        %[bboxLidar,indices] = get_boundingBoxInformationV2(ptCloud_of_the_object_interated)
+        
         ptCloudB = ptCloud_of_the_object_interated;
+        
 
         ptCloud_of_the_object_interated=[nan nan nan];
 
@@ -646,6 +654,29 @@ function [xyzPoints_result] = ptCloud_processing(ptCloud, background_Distance, c
     if(xyzPoints_Amount_rows>=2)
         xyzPoints_result(1,:) = xyzPoints_result(2,:);
     end
+end
+
+
+
+function [pointCloudInformations] = get_boundingBoxInformation(ptCloud, background_Distance, cut_value)
+
+     xyzPoints_result = ptCloud_processing(ptCloud, background_Distance, cut_value);
+     pointCloudInformations = regionprops3(xyzPoints_result,'basic');
+     
+end
+
+
+function [bboxLidar,indices] = get_boundingBoxInformationV2(ptCloud)
+
+   bboxImage =[];
+   intrinsics =[];
+   tform = [];
+   [bboxLidar,indices] = bboxCameraToLidar(bboxImage,ptCloud,intrinsics,tform,'ClusterThreshold',1)
+
+   figure
+   pcshow(pc)
+   showShape('cuboid',bboxLidar,'Opacity',0.5,'Color','green')
+    
 end
 
  %   Example : Find points within a given cuboid
