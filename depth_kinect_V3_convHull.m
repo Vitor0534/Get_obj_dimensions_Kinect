@@ -9,6 +9,26 @@
 
 %Paso 0: chamada de funções
 method_1_frame_by_frame();
+%test_MBB();
+
+function test_MBB()
+%pegando o variável do workspace
+   ptCloud = evalin('base','ptCloudB');
+   background_Distance = 1.1;
+   cut_value = 0.05;
+    
+    
+   ptCloud = ptCloud_processing(ptCloud, background_Distance, cut_value);
+   
+   [bBox,minDepth] = Minimum_Bounding_Box(ptCloud);
+   
+   height = sqrt((bBox(1,2) - bBox(1,3))^2 + (bBox(2,2) - bBox(2,3))^2)*100
+   width = sqrt((bBox(1,1) - bBox(1,2))^2 + (bBox(2,1) - bBox(2,2))^2)*100
+   depth = (background_Distance - minDepth)*100
+   volume = (height*width*depth)/(100^3)
+   
+end
+
 
 
 
@@ -58,13 +78,13 @@ function method_1_frame_by_frame()
     %roi= [-0.3, 0.1, -0.3, 0.3, 0, inf] %--> área adequada (original - sem esteira)
     %roi= [-0.28, 0.08, -0.2, 0.2, 0, inf] %--> área adequada (original - com esteira)
     %roi= [-0.2, 0.0, -0.103, 0.12, 0, inf]
-    roi= [-0.25, 0.18, -0.01, 0, 0, inf] %--> teste para limitar scanneamento (slice - com esteira) largura = 0,01
+    %roi= [-0.25, 0.18, -0.01, 0, 0, inf] %--> teste para limitar scanneamento (slice - com esteira) largura = 0,01
     %roi= [-0.25, 0.18, -0.08, 0.07, 0, inf] %--> teste para limitar scanneamento (slice - com esteira)
-    %roi = [-0.25, 0.18, -0.035, 0.025, 0, inf] %--> teste para limitar scanneamento (slice - com esteira) largura = 0.06
+    roi = [-0.25, 0.18, -0.035, 0.025, 0, inf] %--> teste para limitar scanneamento (slice - com esteira) largura = 0.06
     %roi = [-0.25, 0.18, -0.030, 0.020, 0, inf] %--> teste para limitar scanneamento (slice - com esteira) largura = 0.05
     
     background_Distance = 1.1;
-    
+    cut_value = 0.01;
     
     %PT6: plotando a point cloud para visualização
         plotPointCloud(colorDevice,depthDevice,0,roi);
@@ -75,7 +95,7 @@ function method_1_frame_by_frame()
      %ROI ajustado: [-0.3, 0.1, -0.2, 0.2, 0, inf]
      %[hight, width, depth,ptCloudB] = pc_Object_Dimension_Extract_OP2(ptCloud,background_Distance,roi);
      
-     [hight, width, depth,ptCloudB,number_of_Obj_samples] = pc_Object_Dimension_scanner(background_Distance,roi,depthDevice,colorDevice,"Static",0.06, 0.01,5);
+     [hight, width, depth,ptCloudB,number_of_Obj_samples] = pc_Object_Dimension_scanner(background_Distance,roi,depthDevice,colorDevice,"Static",0.06, cut_value,5);
      
      hight
      width
@@ -440,21 +460,22 @@ function [height, width, depth,ptCloudB,number_of_Obj_samples] = pc_Object_Dimen
         %ptCloud_of_the_object_interated = add_Steps_to_the_ptCloud(ptCloud_of_the_object_interated,number_of_Obj_samples+1,step);
         %ptCloud_of_the_object_interated = ptCloud_processing(ptCloud_of_the_object_interated, background_Distance, cut_value);
 
+        
+        %Método AABB - testado
         [height, width, depth,~] = get_Object_dimensions_to_ptc_column(ptCloud_of_the_object_interated, height, width, depth,method,step, 10);
+        
+        
+       %Método MBB - tem que testar
+        ptCloud = ptCloud_processing(ptCloud_of_the_object_interated, background_Distance, cut_value);
+        [height, width, depth,~] = get_Object_dimensions_to_ptcC_with_MBB(ptCloud, background_Distance);
 
-        show_Dimentions_and_convexhull(width, height, depth, ptCloud_of_the_object_interated, background_Distance)
+       
         
+        show_Dimentions_and_convexhull(width, height, depth, ptCloud_of_the_object_interated, background_Distance);
         
-        ptCloudInformations = get_boundingBoxInformation(ptCloud_of_the_object_interated, background_Distance, cut_value)
-        ptCloudInformations.BoundingBox
-        
-        
-        %[bboxLidar,indices] = get_boundingBoxInformationV2(ptCloud_of_the_object_interated)
-        
+       
         ptCloudB = ptCloud_of_the_object_interated;
         
-
-        ptCloud_of_the_object_interated=[nan nan nan];
 
         %para que não ocorra um erro em uma nova execução tem que parar a
         %aquisição de frames. uma forma de fazer isso é deletando os objetos de
@@ -678,6 +699,36 @@ function [bboxLidar,indices] = get_boundingBoxInformationV2(ptCloud)
    showShape('cuboid',bboxLidar,'Opacity',0.5,'Color','green')
     
 end
+
+
+
+function [height, width, depth, volume] = get_Object_dimensions_to_ptcC_with_MBB(ptCloud, background_Distance)
+
+   [bBox, minDepth] = Minimum_Bounding_Box(ptCloud);
+   
+   height = sqrt((bBox(1,2) - bBox(1,3))^2 + (bBox(2,2) - bBox(2,3))^2);
+   width = sqrt((bBox(1,1) - bBox(1,2))^2 + (bBox(2,1) - bBox(2,2))^2);
+   depth = (background_Distance - minDepth);
+   volume = (height*width*depth);
+   
+end
+
+function [bBox,minDepth] = Minimum_Bounding_Box(ptCloud)
+  
+  ptCloud_2D = double([ptCloud(:,1), ptCloud(:,2)]');
+  minDepth = min(ptCloud(:,3));
+  
+  tic
+  bBox = minBoundingBox(ptCloud_2D);
+  toc
+ 
+  figure(42);
+  hold off,  plot(ptCloud_2D(1,:),ptCloud_2D(2,:),'.')
+  hold on,   plot(bBox(1,[1:end 1]),bBox(2,[1:end 1]),'r')
+  axis equal
+
+end
+
 
  %   Example : Find points within a given cuboid
             %   -------------------------------------------
