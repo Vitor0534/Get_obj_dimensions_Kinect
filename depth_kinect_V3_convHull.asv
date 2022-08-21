@@ -693,7 +693,7 @@ function [xyzPoints_result] = ptCloud_processing(ptCloud, background_Distance, c
     end
    
    %Retirando ruidos sutis da point cloud
-   %xyzPoints_result = pcdenoise(pointCloud(xyzPoints_result)).Location; 
+   xyzPoints_result = pcdenoise(pointCloud(xyzPoints_result)).Location; 
     
 end
 
