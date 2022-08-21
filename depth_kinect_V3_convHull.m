@@ -15,9 +15,10 @@ function test_MBB()
 %pegando o variável do workspace
    ptCloud = evalin('base','ptCloudB');
    background_Distance = 1.1;
-   cut_value = 0.05;
+   cut_value = 0.01;
     
-    
+   plotPointCloud_Static(ptCloud);
+   
    ptCloud = ptCloud_processing(ptCloud, background_Distance, cut_value);
    
    [bBox,minDepth] = Minimum_Bounding_Box(ptCloud);
@@ -34,9 +35,9 @@ end
 
 function method_1_frame_by_frame()
     %Pt1: mostrando algumas informações dos sensores 
-        x = "\ninformação dos adaptadores instalados\n"
+        disp("\ninformação dos adaptadores instalados\n");
         imaqhwinfo
-        x = "\n*************************************"
+        disp("\n*************************************");
         imaqhwinfo('kinect')
         imaq.VideoDevice('kinect',1)
 
@@ -78,13 +79,15 @@ function method_1_frame_by_frame()
     %roi= [-0.3, 0.1, -0.3, 0.3, 0, inf] %--> área adequada (original - sem esteira)
     %roi= [-0.28, 0.08, -0.2, 0.2, 0, inf] %--> área adequada (original - com esteira)
     %roi= [-0.2, 0.0, -0.103, 0.12, 0, inf]
-    %roi= [-0.25, 0.18, -0.01, 0, 0, inf] %--> teste para limitar scanneamento (slice - com esteira) largura = 0,01
+    roi= [-0.25, 0.18, -0.01, 0, 0, inf] %--> teste para limitar scanneamento (slice - com esteira) comprimento = 0,01,largura = 0,43
     %roi= [-0.25, 0.18, -0.08, 0.07, 0, inf] %--> teste para limitar scanneamento (slice - com esteira)
-    roi = [-0.25, 0.18, -0.035, 0.025, 0, inf] %--> teste para limitar scanneamento (slice - com esteira) largura = 0.06
-    %roi = [-0.25, 0.18, -0.030, 0.020, 0, inf] %--> teste para limitar scanneamento (slice - com esteira) largura = 0.05
-    
+    %roi = [-0.25, 0.18, -0.035, 0.025, 0, inf] %--> teste para limitar scanneamento (slice - com esteira) comprimento = 0.06,largura = 0,43
+    %roi = [-0.335, 0.265, -0.035, 0.025, 0, inf] %--> teste para limitar scanneamento (slice - com esteira) comprimento = 0.06, largura = 0,70
+    %roi = [-0.25, 0.18, -0.030, 0.020, 0, inf] %--> teste para limitar scanneamento (slice - com esteira) comprimento = 0.05,largura = 0,43
+
     background_Distance = 1.1;
-    cut_value = 0.01;
+    cut_value = 0.03;
+    step = 0.061;
     
     %PT6: plotando a point cloud para visualização
         plotPointCloud(colorDevice,depthDevice,0,roi);
@@ -95,8 +98,8 @@ function method_1_frame_by_frame()
      %ROI ajustado: [-0.3, 0.1, -0.2, 0.2, 0, inf]
      %[hight, width, depth,ptCloudB] = pc_Object_Dimension_Extract_OP2(ptCloud,background_Distance,roi);
      
-     [hight, width, depth,ptCloudB,number_of_Obj_samples] = pc_Object_Dimension_scanner(background_Distance,roi,depthDevice,colorDevice,"Static",0.06, cut_value,5);
-     
+     [hight, width, depth,ptCloudB,number_of_Obj_samples] = pc_Object_Dimension_scanner(background_Distance,roi,depthDevice,colorDevice,"Static",step, cut_value,5);
+     disp("Dimensões do objeto via AABB:");
      hight
      width
      depth
@@ -404,11 +407,10 @@ end
 function [height, width, depth,ptCloudB,number_of_Obj_samples] = pc_Object_Dimension_scanner(background_Distance,roi_Slice,depthDevice,colorDevice, method, step, cut_value,sample_rate)
     
     sample_rate = 15; %HZ
-    step=0.06; %m/s
-    %step = step/sample_rate; 
+    %step=0.06; %m/s 
     width=[0,0];  %x
     height=[0,0];  %y
-    depth=[0,background_Distance]; %z
+    depth=[background_Distance,background_Distance]; %z
     
     dimensions_Check=0;
     break_flag=0;
@@ -460,16 +462,20 @@ function [height, width, depth,ptCloudB,number_of_Obj_samples] = pc_Object_Dimen
         %ptCloud_of_the_object_interated = add_Steps_to_the_ptCloud(ptCloud_of_the_object_interated,number_of_Obj_samples+1,step);
         %ptCloud_of_the_object_interated = ptCloud_processing(ptCloud_of_the_object_interated, background_Distance, cut_value);
 
+        ptCloud = ptCloud_processing(ptCloud_of_the_object_interated, background_Distance, cut_value);
         
         %Método AABB - testado
         [height, width, depth,~] = get_Object_dimensions_to_ptc_column(ptCloud_of_the_object_interated, height, width, depth,method,step, 10);
+        %[height, width, depth] = get_boundingBox_AABB(ptCloud, background_Distance);
         
         
        %Método MBB - tem que testar
-        ptCloud = ptCloud_processing(ptCloud_of_the_object_interated, background_Distance, cut_value);
-        [height, width, depth,~] = get_Object_dimensions_to_ptcC_with_MBB(ptCloud, background_Distance);
-
-       
+        disp("Dimensões do objeto via MBB");
+        [heightMBB, widthMBB, depthMBB,volume] = get_Object_dimensions_to_ptC_with_MBB(ptCloud, background_Distance);
+        heightMBB = heightMBB*100
+        widthMBB = widthMBB*100
+        depthMBB= depthMBB*100
+        volume = volume*100^3
         
         show_Dimentions_and_convexhull(width, height, depth, ptCloud_of_the_object_interated, background_Distance);
         
@@ -520,17 +526,18 @@ function [height, width, depth,is_there_Object] = get_Object_dimensions_to_ptc_c
      
      is_there_Object = 0;
      did_it_get_a_step = 0;
+
      for i=1:size(xyzPoints,1)
-               is_there_Object = check_for_object(xyzPoints(i,:),Obj_detect_precision,depth(2),0);
-               if(is_there_Object)
+               %is_there_Object = check_for_object(xyzPoints(i,:),Obj_detect_precision,depth(2),0);
+               %if(is_there_Object)
                    
                    %Rastreia a profundidade 
-                   if(xyzPoints(i,3)<depth(1) || depth(1)==0)
+                   if(xyzPoints(i,3)<depth(1))
                        depth(1)=xyzPoints(i,3);
                    end
 
                    %Rastreia a largura
-                   if(xyzPoints(i,1) < width(1) || width(1)==0)
+                   if(xyzPoints(i,1) < width(1))
                        width(1)= xyzPoints(i,1);
                    elseif(xyzPoints(i,1)>width(2))
                        width(2)=xyzPoints(i,1);
@@ -543,7 +550,7 @@ function [height, width, depth,is_there_Object] = get_Object_dimensions_to_ptc_c
                    else
                        height = get_height(xyzPoints, height, i);
                    end
-               end
+               %end
      end
      
 end
@@ -553,11 +560,18 @@ function [is_there_Object] = check_for_object(xyzPoints, precision, background_D
 end
 
 function [height] = get_height(xyzPoints, height, i)
-     if(xyzPoints(i,2) < height(1) || height(1)==0)
+     if(xyzPoints(i,2) < height(1))% || height(1)==0)
         height(1)=xyzPoints(i,2);
      elseif(xyzPoints(i,2)>height(2))
         height(2)=xyzPoints(i,2);
      end
+end
+
+
+function [height, width, depth] = get_boundingBox_AABB(xyzPoints, background_Distance)
+    height =  [min(xyzPoints(:,2)),max(xyzPoints(:,2))];
+    width  =  [min(xyzPoints(:,1)),max(xyzPoints(:,1))];
+    depth  =  [min(xyzPoints(:,3)),background_Distance];
 end
 
 
@@ -702,13 +716,13 @@ end
 
 
 
-function [height, width, depth, volume] = get_Object_dimensions_to_ptcC_with_MBB(ptCloud, background_Distance)
+function [height, width, depth, volume] = get_Object_dimensions_to_ptC_with_MBB(ptCloud, background_Distance)
 
    [bBox, minDepth] = Minimum_Bounding_Box(ptCloud);
    
-   height = sqrt((bBox(1,2) - bBox(1,3))^2 + (bBox(2,2) - bBox(2,3))^2);
-   width = sqrt((bBox(1,1) - bBox(1,2))^2 + (bBox(2,1) - bBox(2,2))^2);
-   depth = (background_Distance - minDepth);
+   width  = sqrt((bBox(1,2) - bBox(1,3))^2 + (bBox(2,2) - bBox(2,3))^2);
+   height = sqrt((bBox(1,1) - bBox(1,2))^2 + (bBox(2,1) - bBox(2,2))^2);
+   depth  = (background_Distance - minDepth);
    volume = (height*width*depth);
    
 end
@@ -722,11 +736,15 @@ function [bBox,minDepth] = Minimum_Bounding_Box(ptCloud)
   bBox = minBoundingBox(ptCloud_2D);
   toc
  
+  show_boundingBox_on_2D_ptCloud(ptCloud_2D,bBox);
+
+end
+
+function show_boundingBox_on_2D_ptCloud(ptCloud_2D,bBox)
   figure(42);
   hold off,  plot(ptCloud_2D(1,:),ptCloud_2D(2,:),'.')
   hold on,   plot(bBox(1,[1:end 1]),bBox(2,[1:end 1]),'r')
   axis equal
-
 end
 
 
