@@ -79,15 +79,17 @@ function method_1_frame_by_frame()
     %roi= [-0.3, 0.1, -0.3, 0.3, 0, inf] %--> área adequada (original - sem esteira)
     %roi= [-0.28, 0.08, -0.2, 0.2, 0, inf] %--> área adequada (original - com esteira)
     %roi= [-0.2, 0.0, -0.103, 0.12, 0, inf]
-    roi= [-0.25, 0.18, -0.01, 0, 0, inf] %--> teste para limitar scanneamento (slice - com esteira) comprimento = 0,01,largura = 0,43
+    %roi= [-0.25, 0.18, -0.01, 0, 0, inf] %--> teste para limitar scanneamento (slice - com esteira) comprimento = 0,01,largura = 0,43
     %roi= [-0.25, 0.18, -0.08, 0.07, 0, inf] %--> teste para limitar scanneamento (slice - com esteira)
     %roi = [-0.25, 0.18, -0.035, 0.025, 0, inf] %--> teste para limitar scanneamento (slice - com esteira) comprimento = 0.06,largura = 0,43
+    roi = [-0.27, 0.18, -0.0375, 0.0275, 0, inf] %--> teste para limitar scanneamento (slice - com esteira) comprimento = 0.065,largura = 0,48
+    %roi = [-0.25, 0.18, -0.04, 0.03, 0, inf] %--> teste para limitar scanneamento (slice - com esteira) comprimento = 0.07,largura = 0,43
     %roi = [-0.335, 0.265, -0.035, 0.025, 0, inf] %--> teste para limitar scanneamento (slice - com esteira) comprimento = 0.06, largura = 0,70
     %roi = [-0.25, 0.18, -0.030, 0.020, 0, inf] %--> teste para limitar scanneamento (slice - com esteira) comprimento = 0.05,largura = 0,43
 
     background_Distance = 1.1;
     cut_value = 0.03;
-    step = 0.061;
+    step = 0.065;
     
     %PT6: plotando a point cloud para visualização
         plotPointCloud(colorDevice,depthDevice,0,roi);
@@ -465,8 +467,8 @@ function [height, width, depth,ptCloudB,number_of_Obj_samples] = pc_Object_Dimen
         ptCloud = ptCloud_processing(ptCloud_of_the_object_interated, background_Distance, cut_value);
         
         %Método AABB - testado
-        [height, width, depth,~] = get_Object_dimensions_to_ptc_column(ptCloud_of_the_object_interated, height, width, depth,method,step, 10);
-        %[height, width, depth] = get_boundingBox_AABB(ptCloud, background_Distance);
+        %[height, width, depth,~] = get_Object_dimensions_to_ptc_column(ptCloud_of_the_object_interated, height, width, depth,method,step, 10);
+        [height, width, depth] = get_boundingBox_AABB(ptCloud, background_Distance);
         
         
        %Método MBB - tem que testar
@@ -560,7 +562,7 @@ function [is_there_Object] = check_for_object(xyzPoints, precision, background_D
 end
 
 function [height] = get_height(xyzPoints, height, i)
-     if(xyzPoints(i,2) < height(1))% || height(1)==0)
+     if(xyzPoints(i,2) < height(1))
         height(1)=xyzPoints(i,2);
      elseif(xyzPoints(i,2)>height(2))
         height(2)=xyzPoints(i,2);
