@@ -2,10 +2,6 @@
 %       1 - image aquisition toolbox;
 %       2 - kinect for matlab package;
 
-%27/02/2022 - foi implementado a construção da pt a partir dos slices.
-%             ERROr: existe um erro na entrada de dados enviada ao convexhull que impede o
-%                    programa de continuar.
-%                    resolvido: era um valor invalido de nan
 
 %Paso 0: chamada de funções
 method_1_frame_by_frame();
@@ -34,6 +30,8 @@ end
 
 
 function method_1_frame_by_frame()
+
+try
     %Pt1: mostrando algumas informações dos sensores 
         disp("\ninformação dos adaptadores instalados\n");
         imaqhwinfo
@@ -69,27 +67,33 @@ function method_1_frame_by_frame()
         %ptCloud = pcfromkinect(depthDevice, depthImage);
 
 
-    %teste para verificar os pontos
-%     x="matriz de pontos"
-%     xyzPoints = ptCloud.Location(1:50,1:50,:);
-%     xyzPoints = ~isnan(xyzPoints(:,:,:)); %retorna uma matriz com valores lógicos
+
 
     %definindo uma região de interesse para evitar coletar outliers dos cantos
     %roi= [-0.3, 0.2, -0.3, 0.3, 0, inf]
     %roi= [-0.3, 0.1, -0.3, 0.3, 0, inf] %--> área adequada (original - sem esteira)
     %roi= [-0.28, 0.08, -0.2, 0.2, 0, inf] %--> área adequada (original - com esteira)
     %roi= [-0.2, 0.0, -0.103, 0.12, 0, inf]
-    %roi= [-0.25, 0.18, -0.01, 0, 0, inf] %--> teste para limitar scanneamento (slice - com esteira) comprimento = 0,01,largura = 0,43
     %roi= [-0.25, 0.18, -0.08, 0.07, 0, inf] %--> teste para limitar scanneamento (slice - com esteira)
+    
+    %roi= [-0.25, 0.18, -0.01, 0, 0, inf] %--> teste para limitar scanneamento (slice - com esteira) comprimento = 0.01,largura = 0,43 (resultado bons)
+    %roi = [-0.25, 0.18, -0.03, 0.02, 0, inf] %--> teste para limitar scanneamento (slice - com esteira) comprimento = 0.05,largura = 0,43
+    
     %roi = [-0.25, 0.18, -0.035, 0.025, 0, inf] %--> teste para limitar scanneamento (slice - com esteira) comprimento = 0.06,largura = 0,43
-    roi = [-0.27, 0.18, -0.0375, 0.0275, 0, inf] %--> teste para limitar scanneamento (slice - com esteira) comprimento = 0.065,largura = 0,48
+    %roi = [-0.27, 0.18, -0.0375, 0.0275, 0, inf] %--> teste para limitar scanneamento (slice - com esteira) comprimento = 0.065,largura = 0,48(resultado bons)
     %roi = [-0.25, 0.18, -0.04, 0.03, 0, inf] %--> teste para limitar scanneamento (slice - com esteira) comprimento = 0.07,largura = 0,43
+    
+    %roi = [-0.285, 0.215, -0.02, 0.01, 0, inf] %--> teste para limitar scanneamento (slice - com esteira) comprimento = 0.03,largura = 0,50
+    %roi = [-0.285, 0.215, -0.03, 0.02, 0, inf] %--> teste para limitar scanneamento (slice - com esteira) comprimento = 0.05,largura = 0,50
+    roi = [-0.285, 0.215, -0.035, 0.025, 0, inf] %--> teste para limitar scanneamento (slice - com esteira) comprimento = 0.06, largura = 0,50 (resultado bons)
     %roi = [-0.335, 0.265, -0.035, 0.025, 0, inf] %--> teste para limitar scanneamento (slice - com esteira) comprimento = 0.06, largura = 0,70
-    %roi = [-0.25, 0.18, -0.030, 0.020, 0, inf] %--> teste para limitar scanneamento (slice - com esteira) comprimento = 0.05,largura = 0,43
+
+    
 
     background_Distance = 1.1;
-    cut_value = 0.03;
-    step = 0.065;
+    cut_value = 0.05;
+    step = 0.06;
+    sample_rate = 4.4; %hz
     
     %PT6: plotando a point cloud para visualização
         plotPointCloud(colorDevice,depthDevice,0,roi);
@@ -100,7 +104,7 @@ function method_1_frame_by_frame()
      %ROI ajustado: [-0.3, 0.1, -0.2, 0.2, 0, inf]
      %[hight, width, depth,ptCloudB] = pc_Object_Dimension_Extract_OP2(ptCloud,background_Distance,roi);
      
-     [hight, width, depth,ptCloudB,number_of_Obj_samples] = pc_Object_Dimension_scanner(background_Distance,roi,depthDevice,colorDevice,"Static",step, cut_value,5);
+     [hight, width, depth,ptCloudB,number_of_Obj_samples] = pc_Object_Dimension_scanner(background_Distance,roi,depthDevice,colorDevice,"Static",step, cut_value,sample_rate);
      disp("Dimensões do objeto via AABB:");
      hight
      width
@@ -128,8 +132,6 @@ function method_1_frame_by_frame()
         
         
 
-
-
       %PT8:
       %para que não ocorra um erro em uma nova execução tem que para a
       %aquisição de frames uma forma de fazer isso é deletando os objetos de
@@ -145,7 +147,12 @@ function method_1_frame_by_frame()
        %[k2,av2] = convexhull_ptCloud(ptCloud,1.1,roi)
         %[k2,av2]=convexhull_ptCloud_matriz_coluna(ptCloudB,1.1,roi);
         %av2
-
+    catch error
+        disp("Erro na função: pc_Object_Dimension_scanner");
+        disp(error);
+        delete(colorDevice);
+        delete(depthDevice);
+    end
  
  end
  
@@ -408,7 +415,7 @@ end
 
 function [height, width, depth,ptCloudB,number_of_Obj_samples] = pc_Object_Dimension_scanner(background_Distance,roi_Slice,depthDevice,colorDevice, method, step, cut_value,sample_rate)
     
-    sample_rate = 15; %HZ
+    %sample_rate = 15; %HZ
     %step=0.06; %m/s 
     width=[0,0];  %x
     height=[0,0];  %y
@@ -423,6 +430,7 @@ function [height, width, depth,ptCloudB,number_of_Obj_samples] = pc_Object_Dimen
     
     try
     
+        tic
         while(break_flag<=10)
 
             %coletando frames da matriz de pontos
@@ -460,7 +468,8 @@ function [height, width, depth,ptCloudB,number_of_Obj_samples] = pc_Object_Dimen
             pause(1/sample_rate); %Pause amostragem
 
         end
-
+        toc
+        
         %ptCloud_of_the_object_interated = add_Steps_to_the_ptCloud(ptCloud_of_the_object_interated,number_of_Obj_samples+1,step);
 
         ptCloudProcessed = ptCloud_processing(ptCloud_of_the_object_interated, background_Distance, cut_value);
@@ -483,6 +492,7 @@ function [height, width, depth,ptCloudB,number_of_Obj_samples] = pc_Object_Dimen
         
        
         ptCloudB = ptCloud_of_the_object_interated;
+        %ptCloudB = ptCloudProcessed;
         
 
         %para que não ocorra um erro em uma nova execução tem que parar a
@@ -692,8 +702,15 @@ function [xyzPoints_result] = ptCloud_processing(ptCloud, background_Distance, c
         xyzPoints_result(1,:) = xyzPoints_result(2,:);
     end
    
+   %Subamostrando a point cloud
+   xyzPoints_result = pcdownsample(pointCloud(xyzPoints_result),'gridAverage',0.01).Location;
+   
    %Retirando ruidos sutis da point cloud
-   xyzPoints_result = pcdenoise(pointCloud(xyzPoints_result)).Location; 
+   xyzPoints_result = pcdenoise(pointCloud(xyzPoints_result));
+   xyzPoints_result = pcdenoise(xyzPoints_result);
+   xyzPoints_result = pcdenoise(xyzPoints_result);
+   xyzPoints_result = pcdenoise(xyzPoints_result);
+   xyzPoints_result = pcdenoise(xyzPoints_result).Location;
     
 end
 
@@ -742,7 +759,7 @@ function [bBox,minDepth] = Minimum_Bounding_Box(ptCloud)
   bBox = minBoundingBox(ptCloud_2D);
   toc
  
-  show_boundingBox_on_2D_ptCloud(ptCloud_2D,bBox);
+  %show_boundingBox_on_2D_ptCloud(ptCloud_2D,bBox);
 
 end
 
