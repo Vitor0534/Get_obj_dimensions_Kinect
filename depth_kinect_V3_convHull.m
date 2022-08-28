@@ -6,8 +6,15 @@
 %Paso 0: chamada de funções
 method_1_frame_by_frame();
 %test_MBB();
+%test_OMBB_3D();
 
-function test_MBB()
+
+
+%a presente função é baseada no método Minimum_Bounding_Box(ptCloud) (OMBB 2D)
+%----retorno: largura, comprimento e profundidade do objeto
+%passos: 1) tratamento da point cloud, 2) adaptação dos dados para 2D, 3) aplicação
+%do método
+function [height,width,depth] = test_MBB()
 %pegando o variável do workspace
    ptCloud = evalin('base','ptCloudB');
    background_Distance = 1.1;
@@ -17,7 +24,7 @@ function test_MBB()
    
    ptCloud = ptCloud_processing(ptCloud, background_Distance, cut_value);
    
-   [bBox,minDepth] = Minimum_Bounding_Box(ptCloud);
+   [bBox,minDepth] = Minimum_Bounding_Box(ptCloud); %OMBB 2D
    
    height = sqrt((bBox(1,2) - bBox(1,3))^2 + (bBox(2,2) - bBox(2,3))^2)*100
    width = sqrt((bBox(1,1) - bBox(1,2))^2 + (bBox(2,1) - bBox(2,2))^2)*100
@@ -27,6 +34,38 @@ function test_MBB()
 end
 
 
+%a presente função é baseada no método minboundbox() (OMBB 3D)
+%----retorno: largura, comprimento e profundidade do objeto
+%passos: 1) tratamento da point clou, 2) adaptação dos dados, 3) aplicação
+%do método
+function [height,width,depth] = test_OMBB_3D()
+%pegando o variável do workspace
+   ptCloud = evalin('base','ptCloudB');
+   background_Distance = 1.1;
+   cut_value = 0.07;
+    
+   plotPointCloud_Static(ptCloud);
+   
+   ptCloud = ptCloud_processing(ptCloud, background_Distance, cut_value);
+   
+   %OMBB 3D
+   [rotmat,cornerpoints,volume,surface] = minboundbox(double(ptCloud(:,1)),double(ptCloud(:,2)),double(ptCloud(:,3)),'v',1); 
+   plot3(double(ptCloud(:,1)),double(ptCloud(:,2)),double(ptCloud(:,3)),'b.');
+   hold on;
+   plotminbox(cornerpoints,'r');
+   
+    Mensurement1 = sqrt(((cornerpoints(1,1)-cornerpoints(2,1))^2+(cornerpoints(1,2)-cornerpoints(2,2))^2+(cornerpoints(1,3)-cornerpoints(2,3))^2))*100;
+    Mensurement2 = sqrt(((cornerpoints(2,1)-cornerpoints(3,1))^2+(cornerpoints(2,2)-cornerpoints(3,2))^2+(cornerpoints(2,3)-cornerpoints(3,3))^2))*100;
+    Mensurement3 = sqrt(((cornerpoints(1,1)-cornerpoints(5,1))^2+(cornerpoints(1,2)-cornerpoints(5,2))^2+(cornerpoints(1,3)-cornerpoints(5,3))^2))*100;
+    
+    mensurements = sort([ Mensurement1 Mensurement2 Mensurement3]);
+    height = mensurements(3)
+    width = mensurements(2)
+    depth = mensurements(1)
+    
+    volume = (height*width*depth)/(100^3)
+   
+end
 
 
 function method_1_frame_by_frame()
@@ -64,17 +103,23 @@ try
     %o parametro location é a matriz m-by-n-by-3 que são os pontos
 
         %ptCloud = pcfromkinect(depthDevice, depthImage,colorImage);
-        %ptCloud = pcfromkinect(depthDevice, depthImage);
+        ptCloud = pcfromkinect(depthDevice, depthImage);
 
 
 
 
     %definindo uma região de interesse para evitar coletar outliers dos cantos
+    
+    %Rois para amostragem estática
+    %roi = [-0.2645, 0.2125, -0.285, 0.35, 0, inf]
     %roi= [-0.3, 0.2, -0.3, 0.3, 0, inf]
     %roi= [-0.3, 0.1, -0.3, 0.3, 0, inf] %--> área adequada (original - sem esteira)
     %roi= [-0.28, 0.08, -0.2, 0.2, 0, inf] %--> área adequada (original - com esteira)
     %roi= [-0.2, 0.0, -0.103, 0.12, 0, inf]
     %roi= [-0.25, 0.18, -0.08, 0.07, 0, inf] %--> teste para limitar scanneamento (slice - com esteira)
+    
+    
+    %Rois para amostragem móvel
     
     %roi= [-0.25, 0.18, -0.01, 0, 0, inf] %--> teste para limitar scanneamento (slice - com esteira) comprimento = 0.01,largura = 0,43 (resultado bons)
     %roi = [-0.25, 0.18, -0.03, 0.02, 0, inf] %--> teste para limitar scanneamento (slice - com esteira) comprimento = 0.05,largura = 0,43
@@ -85,7 +130,7 @@ try
     
     %roi = [-0.285, 0.215, -0.02, 0.01, 0, inf] %--> teste para limitar scanneamento (slice - com esteira) comprimento = 0.03,largura = 0,50
     %roi = [-0.285, 0.215, -0.03, 0.02, 0, inf] %--> teste para limitar scanneamento (slice - com esteira) comprimento = 0.05,largura = 0,50
-    roi = [-0.285, 0.215, -0.035, 0.025, 0, inf] %--> teste para limitar scanneamento (slice - com esteira) comprimento = 0.06, largura = 0,50 (resultado bons)
+    roi = [-0.285, 0.215, -0.035, 0.025, 0, inf] %--> teste para limitar scanneamento (slice - com esteira) comprimento = 0.06, largura = 0,50 (resultado bons)<-
     %roi = [-0.335, 0.265, -0.035, 0.025, 0, inf] %--> teste para limitar scanneamento (slice - com esteira) comprimento = 0.06, largura = 0,70
 
     
@@ -427,6 +472,7 @@ function [height, width, depth,ptCloudB,number_of_Obj_samples] = pc_Object_Dimen
     ptCloud_of_the_object_interated=[nan nan nan];
     
     number_of_Obj_samples = 0;
+
     
     try
     
@@ -440,7 +486,7 @@ function [height, width, depth,ptCloudB,number_of_Obj_samples] = pc_Object_Dimen
             %[height, width, depth,is_there_Object] = get_Object_dimensions_to_ptc_column(xyzPoints, height, width, depth,method,step);
 
             is_there_Object = check_for_object(xyzPoints, 10, background_Distance, cut_value);
-
+    
             if(is_there_Object)
                 dimensions_Check=0;
                 break_flag=0;
@@ -452,23 +498,25 @@ function [height, width, depth,ptCloudB,number_of_Obj_samples] = pc_Object_Dimen
                                                   (xyzPoints(:,:) - [0 (step*(number_of_Obj_samples+1)) 0])];
 
                 number_of_Obj_samples = number_of_Obj_samples +1;
-
+            
+            
             elseif(dimensions_Check>=3)
-
+                
                 %show_Dimentions_and_convexhull(width, height, depth, ptCloud_of_the_object_interated, background_Distance)
                 %ptCloud_of_the_object_interated=[nan nan nan];
 
                 break_flag = break_flag + 1
                 %number_of_steps=0;
+                
 
             else
                 dimensions_Check=dimensions_Check+1;
             end
-
-            pause(1/sample_rate); %Pause amostragem
+           
+           pause(1/sample_rate); %Pause amostragem
 
         end
-        toc
+        
         
         %ptCloud_of_the_object_interated = add_Steps_to_the_ptCloud(ptCloud_of_the_object_interated,number_of_Obj_samples+1,step);
 
@@ -479,6 +527,8 @@ function [height, width, depth,ptCloudB,number_of_Obj_samples] = pc_Object_Dimen
         %[height, width, depth,~] = get_Object_dimensions_to_ptc_column(ptCloudProcessed, height, width, depth,method,step, 10);
         [height, width, depth] = get_boundingBox_AABB(ptCloudProcessed, background_Distance);
         
+        disp("O tempo de execução para a medida foi:" + toc + "s");
+        % a contagem de flag demora 6 segundos
         
        %Método MBB - testado
         disp("Dimensões do objeto via MBB");
@@ -493,6 +543,8 @@ function [height, width, depth,ptCloudB,number_of_Obj_samples] = pc_Object_Dimen
        
         ptCloudB = ptCloud_of_the_object_interated;
         %ptCloudB = ptCloudProcessed;
+        
+        
         
 
         %para que não ocorra um erro em uma nova execução tem que parar a
@@ -710,6 +762,8 @@ function [xyzPoints_result] = ptCloud_processing(ptCloud, background_Distance, c
    xyzPoints_result = pcdenoise(xyzPoints_result);
    xyzPoints_result = pcdenoise(xyzPoints_result);
    xyzPoints_result = pcdenoise(xyzPoints_result);
+
+
    xyzPoints_result = pcdenoise(xyzPoints_result).Location;
     
 end
@@ -755,9 +809,9 @@ function [bBox,minDepth] = Minimum_Bounding_Box(ptCloud)
   ptCloud_2D = double([ptCloud(:,1), ptCloud(:,2)]');
   minDepth = min(ptCloud(:,3));
   
-  tic
+  %tic
   bBox = minBoundingBox(ptCloud_2D);
-  toc
+  %toc
  
   %show_boundingBox_on_2D_ptCloud(ptCloud_2D,bBox);
 
