@@ -4,9 +4,9 @@
 
 
 %Paso 0: chamada de funções
-method_1_frame_by_frame();
+%method_1_frame_by_frame();
 %test_MBB();
-%test_OMBB_3D();
+test_OMBB_3D();
 
 
 
@@ -42,7 +42,7 @@ function [height,width,depth] = test_OMBB_3D()
 %pegando o variável do workspace
    ptCloud = evalin('base','ptCloudB');
    background_Distance = 1.1;
-   cut_value = 0.07;
+   cut_value = 0.05;
     
    plotPointCloud_Static(ptCloud);
    
@@ -63,7 +63,8 @@ function [height,width,depth] = test_OMBB_3D()
     width = mensurements(2)
     depth = mensurements(1)
     
-    volume = (height*width*depth)/(100^3)
+    volume
+    %volume2 = (height*width*depth)/(100^3)
    
 end
 
@@ -111,7 +112,7 @@ try
     %definindo uma região de interesse para evitar coletar outliers dos cantos
     
     %Rois para amostragem estática
-    %roi = [-0.2645, 0.2125, -0.285, 0.35, 0, inf]
+    roi = [-0.2645, 0.2125, -0.285, 0.35, 0, inf]
     %roi= [-0.3, 0.2, -0.3, 0.3, 0, inf]
     %roi= [-0.3, 0.1, -0.3, 0.3, 0, inf] %--> área adequada (original - sem esteira)
     %roi= [-0.28, 0.08, -0.2, 0.2, 0, inf] %--> área adequada (original - com esteira)
@@ -130,7 +131,7 @@ try
     
     %roi = [-0.285, 0.215, -0.02, 0.01, 0, inf] %--> teste para limitar scanneamento (slice - com esteira) comprimento = 0.03,largura = 0,50
     %roi = [-0.285, 0.215, -0.03, 0.02, 0, inf] %--> teste para limitar scanneamento (slice - com esteira) comprimento = 0.05,largura = 0,50
-    roi = [-0.285, 0.215, -0.035, 0.025, 0, inf] %--> teste para limitar scanneamento (slice - com esteira) comprimento = 0.06, largura = 0,50 (resultado bons)<-
+    %roi = [-0.285, 0.215, -0.035, 0.025, 0, inf] %--> teste para limitar scanneamento (slice - com esteira) comprimento = 0.06, largura = 0,50 (resultado bons)<-
     %roi = [-0.335, 0.265, -0.035, 0.025, 0, inf] %--> teste para limitar scanneamento (slice - com esteira) comprimento = 0.06, largura = 0,70
 
     
@@ -147,9 +148,9 @@ try
 
     %PT 7: extraindo as dimensões do objeto pela point cloud
      %ROI ajustado: [-0.3, 0.1, -0.2, 0.2, 0, inf]
-     %[hight, width, depth,ptCloudB] = pc_Object_Dimension_Extract_OP2(ptCloud,background_Distance,roi);
+     [hight, width, depth,ptCloudB] = pc_Object_Dimension_Extract_OP2(ptCloud,background_Distance,roi);
      
-     [hight, width, depth,ptCloudB,number_of_Obj_samples] = pc_Object_Dimension_scanner(background_Distance,roi,depthDevice,colorDevice,"Static",step, cut_value,sample_rate);
+     %[hight, width, depth,ptCloudB,number_of_Obj_samples] = pc_Object_Dimension_scanner(background_Distance,roi,depthDevice,colorDevice,"Static",step, cut_value,sample_rate);
      disp("Dimensões do objeto via AABB:");
      hight
      width
@@ -164,7 +165,7 @@ try
      Volume_m3 = (Hight_b_cm/100) * (Width_b_cm/100) * (Depth_b_cm/100)
 
      
-     number_of_Obj_samples
+     %number_of_Obj_samples
      
      %visualizando imagem de profundidade
         title('imagem RGB')
@@ -703,6 +704,9 @@ function [x,y,z] = format_Data(ptCloud)
     end
 end
 
+
+
+
 function [xyzPoints] = get_ptCloud_matrix(ptCloud)
     if(isobject(ptCloud))
         xyzPoints = ptCloud.Location;
@@ -728,6 +732,8 @@ function [ptCloud] = get_Pt_Cloud_Frame(depthDevice,colorDevice, color)
      end
 end
 
+
+
 %o processo é feito em dois passos:
 %   1- corta o fundo usando a medida conhecida background_Distance
 %   2- pega o ponto da matriz obtida na amostragem e reflete cria um ponto 
@@ -741,6 +747,11 @@ function [xyzPoints_result] = ptCloud_processing(ptCloud, background_Distance, c
     
     xyzPoints_Amount_rows = size(xyzPoints,1);
     
+%     plotPtCloud(xyzPoints, 'Point cloud de entrada');
+%     x=1
+    
+    
+    %Segmentando e adiciponando base na point cloud
     for i=1:xyzPoints_Amount_rows
         if(~isnan(xyzPoints(i,:)))
             if((xyzPoints(i,3) <= (background_Distance - cut_value)))
@@ -754,20 +765,60 @@ function [xyzPoints_result] = ptCloud_processing(ptCloud, background_Distance, c
         xyzPoints_result(1,:) = xyzPoints_result(2,:);
     end
    
+%     ptCloud_segmented = xyzPoints_result;
+%     plotPtCloud(xyzPoints_result, 'PtCloud segmentada');
+%     x=1
+    
+    
    %Subamostrando a point cloud
-   xyzPoints_result = pcdownsample(pointCloud(xyzPoints_result),'gridAverage',0.01).Location;
+   xyzPoints_result = pcdownsample(pointCloud(xyzPoints_result),'gridAverage',0.01);
+   
+%    plotPtCloud(xyzPoints_result, 'PtCloud subamostrada');
+%    x=1
+   
    
    %Retirando ruidos sutis da point cloud
-   xyzPoints_result = pcdenoise(pointCloud(xyzPoints_result));
+   xyzPoints_result = pcdenoise(xyzPoints_result);
    xyzPoints_result = pcdenoise(xyzPoints_result);
    xyzPoints_result = pcdenoise(xyzPoints_result);
    xyzPoints_result = pcdenoise(xyzPoints_result);
 
-
-   xyzPoints_result = pcdenoise(xyzPoints_result).Location;
-    
+   xyzPoints_result = pcdenoise(xyzPoints_result, "Threshold",1,"NumNeighbors",3).Location;
+   
+%    plotPtCloud(xyzPoints_result, 'Point cloud Filtrada');
+%    x=1
+%    
+%    plotPtCloud(xyzPoints_result, 'Point cloud Filtrada');
+%    x=1
+%    
+   
+%    [x,y,z] = format_Data(xyzPoints_result);
+%    [k2,~] = convhull(x,y,z,'Simplify',true);
+%    %plotPtCloud(xyzPoints_result([k2(:,1) k2(:,2) k2(:,3)]), 'Pontos de convex hull');
+%    show_convexhull(k2,x,y,z,'FaceColor','cyan')
+%     
+%    
+%    %ComparePtCloud(pointCloud(xyzPoints_result), pointCloud(ptCloud_segmented));
+%    
 end
 
+function plotPtCloud(ptCloud, tt)
+   figure;
+   hold off, pcshow(ptCloud);
+   title(tt);
+end
+
+
+function ComparePtCloud(pc1, pc2)
+
+figure;
+pcshowpair(pc1,pc2,'VerticalAxis','Y','VerticalAxisDir','Down')
+title('Difference Between Two Point Clouds')
+xlabel('X(m)')
+ylabel('Y(m)')
+zlabel('Z(m)')
+
+end
 
 
 function [pointCloudInformations] = get_boundingBoxInformation(ptCloud, background_Distance, cut_value)
@@ -785,7 +836,7 @@ function [bboxLidar,indices] = get_boundingBoxInformationV2(ptCloud)
    tform = [];
    [bboxLidar,indices] = bboxCameraToLidar(bboxImage,ptCloud,intrinsics,tform,'ClusterThreshold',1)
 
-   figure
+   figure(42)
    pcshow(pc)
    showShape('cuboid',bboxLidar,'Opacity',0.5,'Color','green')
     
