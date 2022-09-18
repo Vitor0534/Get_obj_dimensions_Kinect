@@ -4,19 +4,22 @@
 
 
 %Paso 0: chamada de funções
-%method_1_frame_by_frame();
-%test_MBB();
-%test_OMBB_3D();
-TestAllMesureMethods();
+method_1_frame_by_frame();
+
+
+%TestAllMesureMethods();
 
 
 
 
 %testa os métodos de médida em sequência
 function TestAllMesureMethods()
+disp("resultados AABB:")
 test_AABB();
+disp("resultados OMBB:")
 test_MBB();
-test_OMBB_3D();
+%disp("resultados OMBB 3D:")
+%test_OMBB_3D();
 end
 
 
@@ -54,18 +57,20 @@ function [height,width,depth] = test_MBB()
 %pegando o variável do workspace
    ptCloud = evalin('base','ptCloudB');
    background_Distance = 1.1;
-   cut_value = 0.01;
-    
+   cut_value = 0.07;
+   
    plotPointCloud_Static(ptCloud);
    
    ptCloud = ptCloud_processing(ptCloud, background_Distance, cut_value);
    
    [bBox,minDepth] = Minimum_Bounding_Box(ptCloud); %OMBB 2D
    
-   height = sqrt((bBox(1,2) - bBox(1,3))^2 + (bBox(2,2) - bBox(2,3))^2)*100
-   width = sqrt((bBox(1,1) - bBox(1,2))^2 + (bBox(2,1) - bBox(2,2))^2)*100
-   depth = (background_Distance - minDepth)*100
-   volume = (height*width*depth)/(100^3)
+   height_OMBB = sqrt((bBox(1,2) - bBox(1,3))^2 + (bBox(2,2) - bBox(2,3))^2)*100
+   width_OMBB = sqrt((bBox(1,1) - bBox(1,2))^2 + (bBox(2,1) - bBox(2,2))^2)*100
+   depth_OMBB = (background_Distance - minDepth)*100
+   volume_OMBB = (height_OMBB*width_OMBB*depth_OMBB)/(100^3)
+   
+    convexhull_ptCloud_matriz_coluna(ptCloud,background_Distance);
    
 end
 
@@ -85,7 +90,7 @@ function [height,width,depth] = test_OMBB_3D()
    ptCloud = ptCloud_processing(ptCloud, background_Distance, cut_value);
    
    %OMBB 3D
-   [rotmat,cornerpoints,volume,surface] = minboundbox(double(ptCloud(:,1)),double(ptCloud(:,2)),double(ptCloud(:,3)),'v',1); 
+   [rotmat,cornerpoints,volume_OMBB3D,surface] = minboundbox(double(ptCloud(:,1)),double(ptCloud(:,2)),double(ptCloud(:,3)),'v',1); 
    plot3(double(ptCloud(:,1)),double(ptCloud(:,2)),double(ptCloud(:,3)),'b.');
    hold on;
    plotminbox(cornerpoints,'r');
@@ -95,11 +100,11 @@ function [height,width,depth] = test_OMBB_3D()
     Mensurement3 = sqrt(((cornerpoints(1,1)-cornerpoints(5,1))^2+(cornerpoints(1,2)-cornerpoints(5,2))^2+(cornerpoints(1,3)-cornerpoints(5,3))^2))*100;
     
     mensurements = sort([ Mensurement1 Mensurement2 Mensurement3]);
-    height = mensurements(3)
-    width = mensurements(2)
-    depth = mensurements(1)
+    height_OMBB3D = mensurements(3)
+    width_OMBB3D = mensurements(2)
+    depth_OMBB3D = mensurements(1)
     
-    volume
+    volume_OMBB3D
     %volume2 = (height*width*depth)/(100^3)
    
 end
@@ -160,11 +165,12 @@ function method_1_frame_by_frame()
     
     %Rois para amostragem móvel
  
-    roi= [-0.25, 0.18, -0.01, 0, 0, inf] %--> teste para limitar scanneamento (slice - com esteira) comprimento = 0.01,largura = 0,43 (resultado bons)
+    %roi= [-0.25, 0.18, -0.01, 0, 0, inf] %--> teste para limitar scanneamento (slice - com esteira) comprimento = 0.01,largura = 0,43 (resultado bons)
     %roi = [-0.25, 0.18, -0.03, 0.02, 0, inf] %--> teste para limitar scanneamento (slice - com esteira) comprimento = 0.05,largura = 0,43
     
     %roi = [-0.25, 0.18, -0.035, 0.025, 0, inf] %--> teste para limitar scanneamento (slice - com esteira) comprimento = 0.06,largura = 0,43
-    %roi = [-0.25, 0.18, -0.0375, 0.0275, 0, inf] %--> teste para limitar scanneamento (slice - com esteira) comprimento = 0.065,largura = 0,48(resultado bons)<-
+    roi = [-0.25, 0.18, -0.0375, 0.0275, 0, inf] %--> teste para limitar scanneamento (slice - com esteira) comprimento = 0.065,largura = 0,48(resultado bons)<-
+    %roi = [-0.285, 0.215, -0.0375, 0.0275, 0, inf] %--> teste para limitar scanneamento (slice - com esteira) comprimento = 0.065,largura = 0,50(resultado bons)
     %roi = [-0.25, 0.18, -0.04, 0.03, 0, inf] %--> teste para limitar scanneamento (slice - com esteira) comprimento = 0.07,largura = 0,43
     
     %roi = [-0.285, 0.215, -0.02, 0.01, 0, inf] %--> teste para limitar scanneamento (slice - com esteira) comprimento = 0.03,largura = 0,50
@@ -194,12 +200,12 @@ function method_1_frame_by_frame()
     
      %%calculando altura, largura, profundidade e volume
      
-     disp("Dimensões do objeto via AABB:");
-     roi
-     Hight_b_cm = (hight(2)-hight(1))*100
-     Width_b_cm = (width(2)-width(1))*100
-     Depth_b_cm = (depth(2)-depth(1))*100
-     Volume_m3 = (Hight_b_cm/100) * (Width_b_cm/100) * (Depth_b_cm/100)
+%      disp("Dimensões do objeto via AABB:");
+%      roi
+%      Hight_b_cm = (hight(2)-hight(1))*100
+%      Width_b_cm = (width(2)-width(1))*100
+%      Depth_b_cm = (depth(2)-depth(1))*100
+%      Volume_m3 = (Hight_b_cm/100) * (Width_b_cm/100) * (Depth_b_cm/100)
 
      
      number_of_Obj_samples
@@ -517,7 +523,7 @@ function [height, width, depth,ptCloudB,number_of_Obj_samples] = pc_Object_Dimen
     
     try
     
-        
+        disp("Iniciando Medida da Bagagem...");
         while(break_flag<=10)
 
             %coletando frames da matriz de pontos
@@ -579,7 +585,7 @@ function [height, width, depth,ptCloudB,number_of_Obj_samples] = pc_Object_Dimen
         tic
         
         %Método AABB - testado
-        disp("Dimensões do objeto via AABB:");
+        %disp("Dimensões do objeto via AABB:");
         %[height, width, depth,~] = get_Object_dimensions_to_ptc_column(ptCloudProcessed, height, width, depth,method,step, 10);
         [height, width, depth] = get_boundingBox_AABB(ptCloudProcessed, background_Distance);
         
@@ -588,37 +594,33 @@ function [height, width, depth,ptCloudB,number_of_Obj_samples] = pc_Object_Dimen
         
         
         mensurements = sort([(height(2)-height(1))*100 (width(2)-width(1))*100 (depth(2)-depth(1))*100]);
-        Hight_AABB = mensurements(3)
-        Width_AABB = mensurements(2)
-        Depth_AABB = mensurements(1)
+        Hight_AABB = mensurements(3);
+        Width_AABB = mensurements(2);
+        Depth_AABB = mensurements(1);
         
         
       
         
         %Método MBB - testado
-        disp("Dimensões do objeto via OMBB:");
+        %disp("Dimensões do objeto via OMBB:");
         
         tic
         [heightMBB, widthMBB, depthMBB,volume] = get_Object_dimensions_to_ptC_with_MBB(ptCloudProcessed, background_Distance);
         tempo_medida_OMBB = toc;
         
-        heightMBB = heightMBB*100
-        widthMBB = widthMBB*100
-        depthMBB= depthMBB*100
-        volume_MBB = volume*100^3
+        heightMBB = heightMBB*100;
+        widthMBB = widthMBB*100;
+        depthMBB= depthMBB*100;
+        volume_MBB = volume*100^3;
         
         
         %Método OMBB 3D - testar
-        disp("Dimensões do objeto via OMBB 3D:");
+        %disp("Dimensões do objeto via OMBB 3D:");
         tic
         [height_OMBB3D, width_OMBB3D, depth_OMBB3D, volume_OMBB3D] = get_dimensions_with_OMBB_3D(ptCloudProcessed, 'v', 1);
         tempo_medida_OMBB3D = toc;
         
-        height_OMBB3D
-        width_OMBB3D
-        depth_OMBB3D
-        volume_OMBB3D
-        
+
         
         show_Dimentions_and_convexhull(width, height, depth, ptCloudProcessed, background_Distance);
         
@@ -627,35 +629,51 @@ function [height, width, depth,ptCloudB,number_of_Obj_samples] = pc_Object_Dimen
         %ptCloudB = ptCloudProcessed;
         
         
-        disp("As dimensões para cada método são [width heigh depth volume]:");
+        disp("As dimensões para cada método são [largura X altura X profundidade]]:");
         
         disp("mensurement_AABB:")
-        Width_AABB
-        Hight_AABB
-        Depth_AABB
         volume_AABB = (Width_AABB*Hight_AABB*Depth_AABB)
+        disp(Width_AABB + " X " + Hight_AABB + " X " + Depth_AABB + " | " + volume_AABB);
         
+                heightMBB = heightMBB*100;
+        widthMBB = widthMBB*100;
+        depthMBB= depthMBB*100;
+        volume_MBB = volume*100^3;
         disp("mensurement_OMBB:")
-        widthMBB
-        heightMBB
-        depthMBB
-        volume_MBB
+        disp(width_OMBB + " X " + height_OMBB + " X " + depth_OMBB + " | " + volume_OMBB);
+        
         
         disp("mensurement_OMBB_3D:")
-        width_OMBB3D
-        height_OMBB3D
-        depth_OMBB3D
-        volume_OMBB3D
+        disp(width_OMBB3D + " X " + height_OMBB3D + " X " + depth_OMBB3D + " | " + volume_OMBB3D);
         
+        
+        
+        
+        
+        
+        
+        
+       
         
         disp("O tempo de amostragem foi: " + (tempo_amostragem-6) + "s"); % a contagem de flag demora 6 segundos
         disp("O tempo de tratamento da ptCloud foi: " + tempo_tratamento_ptCloud + "s");
         disp("O tempo de medida com AABB foi: " + (tempo_medida_AABB + (tempo_amostragem-6) + tempo_tratamento_ptCloud) + "s");
         disp("O tempo de medida com OMBB foi: " + (tempo_medida_OMBB + (tempo_amostragem-6) + tempo_tratamento_ptCloud)+ "s");
         disp("O tempo de medida com OMBB 3D foi: " + (tempo_medida_OMBB3D + (tempo_amostragem-6) + tempo_tratamento_ptCloud) + "s");
+         disp("A quantidade de amostras foi: " + number_of_Obj_samples);
         
+        resultados = Results;
+        
+        resultados.Height = Hight_AABB;
+        resultados.Width = Width_AABB;
+        resultados.Depth = Depth_AABB;
+        resultados.tempo_amostragem = tempo_amostragem;
+        resultados.tempo_tratamento_ptCloud = tempo_tratamento_ptCloud;
+        resultados.tempo_medida = tempo_medida_OMBB;
+        resultados.quantidade_de_amostras = number_of_Obj_samples;
 
-      
+        
+        %print_result_datas(resultados);
         
         
        
@@ -673,9 +691,28 @@ function [height, width, depth,ptCloudB,number_of_Obj_samples] = pc_Object_Dimen
     end
 end
 
+
+
+function print_result_datas(results)
+        disp("Bagagem medida com sucesso...");
+        disp("As dimensões são [altura X largura X profundidade]:");
+        
+        disp(results.Height + " X " + results.Width + " X " + results.Depth);
+
+        tempo_de_flag = 6;
+        
+        disp(" ");
+        disp("O tempo de amostragem foi: " + (results.tempo_amostragem-tempo_de_flag) + "s"); % a contagem de flag demora 6 segundos
+        disp("O tempo de tratamento da ptCloud foi: " + results.tempo_tratamento_ptCloud + "s");
+        disp("O tempo de extração das dimensões foi: " + results.tempo_medida + "s");
+        disp("O tempo de medida total foi: " + (results.tempo_medida + (results.tempo_amostragem-tempo_de_flag) + results.tempo_tratamento_ptCloud)+ "s");
+end
+
+
 function [number] = meters_to_centimeters(number)
     number=number*100;
 end
+
 
 function show_Dimentions_and_convexhull(width, height, depth, ptCloud_of_the_object_interated, background_Distance)
     disp("As Dimensões do objeto são: ");
@@ -784,7 +821,7 @@ end
 
 function [k2,av2] = convexhull_ptCloud_matriz_coluna(ptCloud,background_Distance)
 
- ptCloud = ptCloud_processing(ptCloud, background_Distance, 0.01);
+ %ptCloud = ptCloud_processing(ptCloud, background_Distance, 0.01);
 
 [x,y,z] = format_Data(ptCloud);
 [k2,av2] = convhull(x,y,z,'Simplify',true);
