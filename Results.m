@@ -8,6 +8,8 @@ classdef Results
         tempo_tratamento_ptCloud = 0;
         tempo_medida = 0;
         quantidade_de_amostras = 0;
+        
+        pointCloudCapturada
     end
     
     methods(Static)
