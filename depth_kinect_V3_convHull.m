@@ -1163,25 +1163,4 @@ function plot_OMBB_3D_on_ptCloud(ptCloud,cornerpoints)
    hold on;
    plotminbox(cornerpoints,'r');
 end
-
-
-
-
-
- %   Example : Find points within a given cuboid
-            %   -------------------------------------------
-            %   % Create a point cloud object with randomly generated points
-            %   ptCloudA = pointCloud(100*rand(1000, 3, 'single'));
-            %
-            %   % Define a cuboid
-            %   roi = [0, 50, 0, inf, 0, inf];
-            %
-            %   % Get all the points within the cuboid
-            %   indices = findPointsInROI(ptCloudA, roi);
-            %   ptCloudB = select(ptCloudA, indices);
-            %
-            %   pcshow(ptCloudA.Location, 'r');
-            %   hold on;
-            %   pcshow(ptCloudB.Location, 'g');
-            %   hold off;
   
