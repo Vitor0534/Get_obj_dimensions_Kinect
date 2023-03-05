@@ -327,71 +327,7 @@ end
         [k2,av2]=convexhull_ptCloud_matriz_coluna(ptCloudB,1.1,roi);
         av2
  end
- 
- %*********************************************************************
- % lógica testada, mas não é melhor opção pois entra em conflito com as 
- % funções utilizadas pelo package do kinct para gerar a point cloud a 
- % partir da depth image 
-function testingROIVideoInput()
-    try
-       
-    %Pt1: mostrando algumas informações dos sensores 
-        disp("\ninformação dos adaptadores instalados\n");
-        imaqhwinfo
-        disp("\n*************************************");
-        imaqhwinfo('kinect')
-        imaq.VideoDevice('kinect',1)
-
-    %****************************************************
-    %comentei umas partes para usar a workspace, descomente para voltar a tempo
-    %real
-
-    %PT2: Criando instancia dos objetos de cor e profundidade do kinect*********
-        colorDevice = imaq.VideoDevice('kinect',1);
-        depthDevice = imaq.VideoDevice('kinect',2);
-    %***********************************************************
-    
-    colorDevice.ROI = [859 462 166 26];
-    depthDevice.ROI = [188 185 166 26];
-    
-    %PT3: inicializa a camera:
-        colorDevice();
-        depthDevice();
-    %********************************
-    
-
-    %PT4: captura 1 frame do kinect para inicializar
-        colorImage = colorDevice();
-        depthImage = depthDevice();
-    %********************************
-    
-    roi = [-0.275, 0.205, -0.0375, 0.0275, 0, inf]
-    
-    plotPointCloud(colorDevice,depthDevice,0,roi);
-     
-   %visualizando imagem de profundidade
-    title('imagem RGB')
-    imshow(colorImage);
-    figure();
-        
-    title('imagem de profundidade')
-    imshow(255*(depthImage>255))
-     
-    
-   delete(colorDevice);
-   delete(depthDevice);
-     
-    catch error
-        disp("Erro na função: testingROIVideoInput()");
-        disp(error);
-        delete(colorDevice);
-        delete(depthDevice);
-    end
-    
-end
- 
- 
- 
+  
  
 %função para visualizar a point cloud em tempo real
 function plotPointCloud(colorDevice,depthDevice, color,roi)
@@ -477,7 +413,7 @@ end
 %        eixo z
 
 %matriz MxNxK
-function [hight, width, depth] = pc_Object_Dimension_Extract(ptCloud,background_Distance,roi)
+function [hight, width, depth] = get_Object_Dimension_With_AABB(ptCloud,background_Distance,roi)
     
     %coletando a matriz de pontos
     indices = findPointsInROI(ptCloud, roi);
@@ -524,7 +460,7 @@ end
   
 
 %Matix Mx3
-function [hight, width, depth,ptCloudB] = pc_Object_Dimension_Extract_OP2(ptCloud,background_Distance,roi)
+function [hight, width, depth,ptCloudB] = get_Object_Dimension_With_AABB_OP2(ptCloud,background_Distance,roi)
     
     %coletando a matriz de pontos
     indices = findPointsInROI(ptCloud, roi);
@@ -658,14 +594,9 @@ function [results] = pc_Object_Dimension_scanner(depthDevice,colorDevice, scanne
             
             
             elseif(dimensions_Check>=3)
-                
-                %show_Dimentions_and_convexhull(width, height, depth, ptCloud_of_the_object_interated, background_Distance)
-                %ptCloud_of_the_object_interated=[nan nan nan];
 
                 break_flag = break_flag + 1
-                %number_of_steps=0;
                 
-
             else
                 dimensions_Check=dimensions_Check+1;
             end

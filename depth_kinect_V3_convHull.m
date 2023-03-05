@@ -413,7 +413,7 @@ end
 %        eixo z
 
 %matriz MxNxK
-function [hight, width, depth] = pc_Object_Dimension_Extract(ptCloud,background_Distance,roi)
+function [hight, width, depth] = get_Object_Dimension_With_AABB(ptCloud,background_Distance,roi)
     
     %coletando a matriz de pontos
     indices = findPointsInROI(ptCloud, roi);
@@ -460,7 +460,7 @@ end
   
 
 %Matix Mx3
-function [hight, width, depth,ptCloudB] = pc_Object_Dimension_Extract_OP2(ptCloud,background_Distance,roi)
+function [hight, width, depth,ptCloudB] = get_Object_Dimension_With_AABB_OP2(ptCloud,background_Distance,roi)
     
     %coletando a matriz de pontos
     indices = findPointsInROI(ptCloud, roi);
@@ -594,14 +594,9 @@ function [results] = pc_Object_Dimension_scanner(depthDevice,colorDevice, scanne
             
             
             elseif(dimensions_Check>=3)
-                
-                %show_Dimentions_and_convexhull(width, height, depth, ptCloud_of_the_object_interated, background_Distance)
-                %ptCloud_of_the_object_interated=[nan nan nan];
 
                 break_flag = break_flag + 1
-                %number_of_steps=0;
                 
-
             else
                 dimensions_Check=dimensions_Check+1;
             end
