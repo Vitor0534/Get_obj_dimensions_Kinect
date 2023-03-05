@@ -132,8 +132,7 @@ function GetLuggageDimensionsWithScannerAproach()
         imaq.VideoDevice('kinect',1)
 
     %****************************************************
-    %comentei umas partes para usar a workspace, descomente para voltar a tempo
-    %real
+    %comentei umas partes para usar a workspace, descomente para voltar a tempo real
 
     %PT2: Criando instancia dos objetos de cor e profundidade do kinect*********
         colorDevice = imaq.VideoDevice('kinect',1);
@@ -330,6 +329,9 @@ end
  end
  
  %*********************************************************************
+ % lógica testada, mas não é melhor opção pois entra em conflito com as 
+ % funções utilizadas pelo package do kinct para gerar a point cloud a 
+ % partir da depth image 
 function testingROIVideoInput()
     try
        
@@ -625,7 +627,7 @@ function [results] = pc_Object_Dimension_scanner(depthDevice,colorDevice, scanne
         
         disp("Iniciando Medida da Bagagem...");
         
-        arduinoObj.arduinoMatControl('run',arduinoObj);
+        %arduinoObj.arduinoMatControl('run',arduinoObj);
         
         while(break_flag<=10)
 
@@ -672,7 +674,7 @@ function [results] = pc_Object_Dimension_scanner(depthDevice,colorDevice, scanne
 
         end
         
-        arduinoObj.arduinoMatControl('stop',arduinoObj);
+        %arduinoObj.arduinoMatControl('stop',arduinoObj);
         
         tempo_amostragem = toc;
         

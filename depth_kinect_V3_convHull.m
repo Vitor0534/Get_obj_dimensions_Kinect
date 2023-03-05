@@ -329,6 +329,11 @@ end
  end
  
  %*********************************************************************
+ % lógica testada, mas não é melhor opção pois tem muitos conflitos com as 
+ % funções utilizadas pelo package do kinct para gerar a point cloud a 
+ % partir da depth image 
+ % pode ser que compense avaliar melhor se existe um roi adequado que
+ % permita a execução da função
 function testingROIVideoInput()
     try
        
