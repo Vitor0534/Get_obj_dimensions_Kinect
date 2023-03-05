@@ -4,7 +4,8 @@ classdef ScannerParameters
     %   cut_value           = distância para segmentar a mala do fundo
     %   step                = passo de amostragem
     %   sample_rate         = taxa de amostragem,
-    %   roi                 = região da ptCloud para captura do objeto
+    %   ROI                 = região da ptCloud para captura do objeto
+    %   mensureMethod       = método de medida (MBB | AABB | 3D MBB)
     
     properties  
         background_Distance = 1.08;
