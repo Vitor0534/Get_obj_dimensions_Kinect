@@ -327,73 +327,7 @@ end
         [k2,av2]=convexhull_ptCloud_matriz_coluna(ptCloudB,1.1,roi);
         av2
  end
- 
- %*********************************************************************
- % lógica testada, mas não é melhor opção pois tem muitos conflitos com as 
- % funções utilizadas pelo package do kinct para gerar a point cloud a 
- % partir da depth image 
- % pode ser que compense avaliar melhor se existe um roi adequado que
- % permita a execução da função
-function testingROIVideoInput()
-    try
-       
-    %Pt1: mostrando algumas informações dos sensores 
-        disp("\ninformação dos adaptadores instalados\n");
-        imaqhwinfo
-        disp("\n*************************************");
-        imaqhwinfo('kinect')
-        imaq.VideoDevice('kinect',1)
-
-    %****************************************************
-    %comentei umas partes para usar a workspace, descomente para voltar a tempo
-    %real
-
-    %PT2: Criando instancia dos objetos de cor e profundidade do kinect*********
-        colorDevice = imaq.VideoDevice('kinect',1);
-        depthDevice = imaq.VideoDevice('kinect',2);
-    %***********************************************************
-    
-    colorDevice.ROI = [859 462 166 26];
-    depthDevice.ROI = [188 185 166 26];
-    
-    %PT3: inicializa a camera:
-        colorDevice();
-        depthDevice();
-    %********************************
-    
-
-    %PT4: captura 1 frame do kinect para inicializar
-        colorImage = colorDevice();
-        depthImage = depthDevice();
-    %********************************
-    
-    roi = [-0.275, 0.205, -0.0375, 0.0275, 0, inf]
-    
-    plotPointCloud(colorDevice,depthDevice,0,roi);
-     
-   %visualizando imagem de profundidade
-    title('imagem RGB')
-    imshow(colorImage);
-    figure();
-        
-    title('imagem de profundidade')
-    imshow(255*(depthImage>255))
-     
-    
-   delete(colorDevice);
-   delete(depthDevice);
-     
-    catch error
-        disp("Erro na função: testingROIVideoInput()");
-        disp(error);
-        delete(colorDevice);
-        delete(depthDevice);
-    end
-    
-end
- 
- 
- 
+  
  
 %função para visualizar a point cloud em tempo real
 function plotPointCloud(colorDevice,depthDevice, color,roi)
