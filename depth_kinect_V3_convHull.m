@@ -537,6 +537,8 @@ end
 %               todos eles para objeter o volume final do objeto
 
 
+%To REFACTOR: confira se é possível retirar o dimensions_Check
+
 function [results] = pc_Object_Dimension_scanner(depthDevice,colorDevice, scannerParameters)
     
     background_Distance = scannerParameters.background_Distance;
@@ -742,7 +744,7 @@ function print_result_datas(results)
         disp("O tempo de tratamento da ptCloud foi: " + results.tempo_tratamento_ptCloud + "s");
         disp("O tempo de extração das dimensões foi: " + results.tempo_medida + "s");
         disp("O tempo de medida total foi: " + (results.tempo_medida + (results.tempo_amostragem-tempo_de_flag) + results.tempo_tratamento_ptCloud)+ "s");
-        disp("A quantidade de amostras foi: " + number_of_Obj_samples);
+        disp("A quantidade de amostras foi: " + results.quantidade_de_amostras);
 end
 
 
