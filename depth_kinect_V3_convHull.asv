@@ -10,7 +10,7 @@
 
 
 %Paso 0: chamada de funções
-GetLuggageDimensionsWithScannerAproach();
+getLuggageDimensionsWithScannerAproach();
 
 
 %TestAllMesureMethods();
@@ -120,7 +120,7 @@ function [height,width,depth] = test_OMBB_3D()
 end
 
 
-function GetLuggageDimensionsWithScannerAproach()
+function getLuggageDimensionsWithScannerAproach()
 
    try
        
@@ -198,7 +198,7 @@ function GetLuggageDimensionsWithScannerAproach()
     
     scannerParameters = ScannerParameters();
     
-    scannerParameters.background_Distance = 1.08;
+    scannerParameters.background_Distance = 1.1;
     scannerParameters.cut_value           = 0.05;            %distância para segmentar a mala do fundo
     scannerParameters.step                = 0.065;           %passo de amostragem
     scannerParameters.sample_rate         = 20;              %hz
@@ -537,6 +537,8 @@ end
 %               todos eles para objeter o volume final do objeto
 
 
+%To REFACTOR: confira se é possível retirar o dimensions_Check
+
 function [results] = pc_Object_Dimension_scanner(depthDevice,colorDevice, scannerParameters)
     
     background_Distance = scannerParameters.background_Distance;
@@ -547,8 +549,8 @@ function [results] = pc_Object_Dimension_scanner(depthDevice,colorDevice, scanne
     roi_Slice           = scannerParameters.ROI;
 
 
-    width=[0,0];   %x
-    height=[0,0];  %y
+    width=[0,0];                                     %x
+    height=[0,0];                                    %y
     depth=[background_Distance,background_Distance]; %z
     
     dimensions_Check=0;
@@ -557,13 +559,14 @@ function [results] = pc_Object_Dimension_scanner(depthDevice,colorDevice, scanne
     ptCloud_of_the_object_interated=[nan nan nan];
     
     number_of_Obj_samples = 0;
-
+    startTimeSample       = 0;
     
     try
         
         disp("Iniciando Medida da Bagagem...");
         
         %arduinoObj.arduinoMatControl('run',arduinoObj);
+        startTimeSample = tic;
         
         while(break_flag<=10)
 
@@ -571,18 +574,17 @@ function [results] = pc_Object_Dimension_scanner(depthDevice,colorDevice, scanne
             ptCloudB = aply_roi_PtCloud(get_Pt_Cloud_Frame(depthDevice,colorDevice,0),roi_Slice);
             xyzPoints = ptCloudB.Location;
 
-            %[height, width, depth,is_there_Object] = get_Object_dimensions_to_ptc_column(xyzPoints, height, width, depth,method,step);
 
             is_there_Object = check_for_object(xyzPoints, 10, background_Distance, cut_value);
     
             if(is_there_Object)
                 
                 if(number_of_Obj_samples==0)
-                    tic
+                    startTimeSample = tic;
                 end
                 
-                dimensions_Check=0;
-                break_flag=0;
+                dimensions_Check = 0;
+                break_flag = 0;
 
                 ptCloud_of_the_object_interated(1,:) = xyzPoints(1,:);
                
@@ -607,11 +609,8 @@ function [results] = pc_Object_Dimension_scanner(depthDevice,colorDevice, scanne
         
         %arduinoObj.arduinoMatControl('stop',arduinoObj);
         
-        tempo_amostragem = toc;
+        tempo_amostragem = toc(startTimeSample);
         
-        
-        
-        %ptCloud_of_the_object_interated = add_Steps_to_the_ptCloud(ptCloud_of_the_object_interated,number_of_Obj_samples+1,step);
         
         tic
         
@@ -705,7 +704,7 @@ function [results] = pc_Object_Dimension_scanner(depthDevice,colorDevice, scanne
         results.Depth                             = depthMBB;
         results.tempo_amostragem                  = tempo_amostragem;
         results.tempo_tratamento_ptCloud          = tempo_tratamento_ptCloud;
-        results.tempo_medida = tempo_medida_OMBB;
+        results.tempo_medida                      = tempo_medida_OMBB;
         results.quantidade_de_amostras            = number_of_Obj_samples;
         results.pointCloudCapturada               = ptCloudB;
         
@@ -742,7 +741,7 @@ function print_result_datas(results)
         disp("O tempo de tratamento da ptCloud foi: " + results.tempo_tratamento_ptCloud + "s");
         disp("O tempo de extração das dimensões foi: " + results.tempo_medida + "s");
         disp("O tempo de medida total foi: " + (results.tempo_medida + (results.tempo_amostragem-tempo_de_flag) + results.tempo_tratamento_ptCloud)+ "s");
-        disp("A quantidade de amostras foi: " + number_of_Obj_samples);
+        disp("A quantidade de amostras foi: " + results.quantidade_de_amostras);
 end
 
 
