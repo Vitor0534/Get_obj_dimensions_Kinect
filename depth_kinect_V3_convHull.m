@@ -2,7 +2,7 @@
 %       1 - image aquisition toolbox;
 %       2 - kinect for matlab package;
 
-%dependendo do método utilizado para medida, os dois seguintes packages devem ser
+%Dependendo do método utilizado para medida, os dois seguintes packages devem ser
 %adicionados
 %       3 - Minimal Bounding Box    (https://www.mathworks.com/matlabcentral/fileexchange/18264-minimal-bounding-box)
 %       4 - 2D minimal bounding box (https://www.mathworks.com/matlabcentral/fileexchange/31126-2d-minimal-bounding-box)
@@ -151,7 +151,7 @@ function getLuggageDimensionsWithScannerAproach()
     %*********************************
 
    
-     %PT4: captura 1 frame do kinect para inicializar
+    %PT4: captura 1 frame do kinect para inicializar
         colorImage = colorDevice();
         depthImage = depthDevice();
     %********************************
@@ -161,8 +161,8 @@ function getLuggageDimensionsWithScannerAproach()
     %contruidos na pcfromkinect. ele contem diversos parametros
     %o parametro location é a matriz m-by-n-by-3 que são os pontos
 
-        %ptCloud = pcfromkinect(depthDevice, depthImage,colorImage);
-%         ptCloud = pcfromkinect(depthDevice, depthImage);
+    %ptCloud = pcfromkinect(depthDevice, depthImage,colorImage);
+%   ptCloud = pcfromkinect(depthDevice, depthImage);
 
 
 
@@ -173,38 +173,38 @@ function getLuggageDimensionsWithScannerAproach()
     
     %roi = [-0.2645, 0.2125, -0.285, 0.35, 0, inf]
     %roi = [-0.3, 0.2, -0.3, 0.3, 0, inf]
-    %roi = [-0.3, 0.1, -0.3, 0.3, 0, inf] %--> área adequada (original - sem esteira)
-    %roi = [-0.28, 0.08, -0.2, 0.2, 0, inf] %--> área adequada (original - com esteira)
+    %roi = [-0.3, 0.1, -0.3, 0.3, 0, inf]           %--> área adequada (original - sem esteira)
+    %roi = [-0.28, 0.08, -0.2, 0.2, 0, inf]         %--> área adequada (original - com esteira)
     %roi = [-0.2, 0.0, -0.103, 0.12, 0, inf]
-    %roi = [-0.25, 0.18, -0.08, 0.07, 0, inf] %--> teste para limitar scanneamento (slice - com esteira)
+    %roi = [-0.25, 0.18, -0.08, 0.07, 0, inf]       %--> teste para limitar scanneamento (slice - com esteira)
     
     
     %Rois para amostragem móvel
  
-    %roi= [-0.25, 0.18, -0.01, 0, 0, inf] %--> teste para limitar scanneamento (slice - com esteira) comprimento = 0.01,largura = 0,43 (resultado bons)
-    %roi= [-0.275, 0.205, -0.01, 0, 0, inf] %--> teste para limitar scanneamento (slice - com esteira) comprimento = 0.01,largura = 0,48
-    %roi = [-0.25, 0.18, -0.03, 0.02, 0, inf] %--> teste para limitar scanneamento (slice - com esteira) comprimento = 0.05,largura = 0,43
+    %roi= [-0.25, 0.18, -0.01, 0, 0, inf]           %--> teste para limitar scanneamento (slice - com esteira) comprimento = 0.01,largura = 0,43 (resultado bons)
+    %roi= [-0.275, 0.205, -0.01, 0, 0, inf]         %--> teste para limitar scanneamento (slice - com esteira) comprimento = 0.01,largura = 0,48
+    %roi = [-0.25, 0.18, -0.03, 0.02, 0, inf]       %--> teste para limitar scanneamento (slice - com esteira) comprimento = 0.05,largura = 0,43
     
-    %roi = [-0.25, 0.18, -0.035, 0.025, 0, inf] %--> teste para limitar scanneamento (slice - com esteira) comprimento = 0.06,largura = 0,43 
-    roi = [-0.275, 0.205, -0.0375, 0.0275, 0, inf] %--> teste para limitar scanneamento (slice - com esteira) comprimento = 0.065,largura = 0,48(resultado bons) <-
+    %roi = [-0.25, 0.18, -0.035, 0.025, 0, inf]     %--> teste para limitar scanneamento (slice - com esteira) comprimento = 0.06,largura = 0,43 
+    roi = [-0.275, 0.205, -0.0375, 0.0275, 0, inf]  %--> teste para limitar scanneamento (slice - com esteira) comprimento = 0.065,largura = 0,48(resultado bons) <-
     %roi = [-0.285, 0.215, -0.0375, 0.0275, 0, inf] %--> teste para limitar scanneamento (slice - com esteira) comprimento = 0.065,largura = 0,50(resultado bons)
-    %roi = [-0.25, 0.18, -0.04, 0.03, 0, inf] %--> teste para limitar scanneamento (slice - com esteira) comprimento = 0.07,largura = 0,43
+    %roi = [-0.25, 0.18, -0.04, 0.03, 0, inf]       %--> teste para limitar scanneamento (slice - com esteira) comprimento = 0.07,largura = 0,43
     
-    %roi = [-0.285, 0.215, -0.02, 0.01, 0, inf] %--> teste para limitar scanneamento (slice - com esteira) comprimento = 0.03,largura = 0,50
-    %roi = [-0.285, 0.215, -0.03, 0.02, 0, inf] %--> teste para limitar scanneamento (slice - com esteira) comprimento = 0.05,largura = 0,50
-    %roi = [-0.285, 0.215, -0.035, 0.025, 0, inf] %--> teste para limitar scanneamento (slice - com esteira) comprimento = 0.06, largura = 0,50 (resultado bons)
-    %roi = [-0.335, 0.265, -0.035, 0.025, 0, inf] %--> teste para limitar scanneamento (slice - com esteira) comprimento = 0.06, largura = 0,70
+    %roi = [-0.285, 0.215, -0.02, 0.01, 0, inf]     %--> teste para limitar scanneamento (slice - com esteira) comprimento = 0.03,largura = 0,50
+    %roi = [-0.285, 0.215, -0.03, 0.02, 0, inf]     %--> teste para limitar scanneamento (slice - com esteira) comprimento = 0.05,largura = 0,50
+    %roi = [-0.285, 0.215, -0.035, 0.025, 0, inf]   %--> teste para limitar scanneamento (slice - com esteira) comprimento = 0.06, largura = 0,50 (resultado bons)
+    %roi = [-0.335, 0.265, -0.035, 0.025, 0, inf]   %--> teste para limitar scanneamento (slice - com esteira) comprimento = 0.06, largura = 0,70
 
     
     scannerParameters = ScannerParameters();
     
-    scannerParameters.background_Distance = 1.1;
-    scannerParameters.cut_value           = 0.05;            %distância para segmentar a mala do fundo
-    scannerParameters.step                = 0.065;           %passo de amostragem
-    scannerParameters.sample_rate         = 20;              %hz
-    scannerParameters.ROI                 = roi;             %[xmin xmax ymin ymax zmin zmax]
-    scannerParameters.scanningMethod      = "Static";
-    
+    scannerParameters.background_Distance           = 1.13;
+    scannerParameters.cut_value                     = 0.08;            %distância para segmentar a mala do fundo
+    scannerParameters.step                          = 0.065;           %passo de amostragem
+    scannerParameters.sample_rate                   = 20;              %hz
+    scannerParameters.ROI                           = roi;             %[xmin xmax ymin ymax zmin zmax]
+    scannerParameters.scanningMethod                = "Static";
+    scannerParameters.objectDetectionPrecision      = 10;
 
 %     background_Distance = 1.1;
 %     cut_value = 0.05;            %distância para segmentar a mala do fundo
@@ -236,27 +236,30 @@ function getLuggageDimensionsWithScannerAproach()
     
      
      
-     %visualizando imagem de profundidade
-        title('imagem RGB')
-        imshow(colorImage);
-        figure();
-        
-        title('imagem de profundidade')
-        imshow(255*(depthImage>255))
+     [x,y,z] = format_Data(results.pointCloudCapturadaTratada);
+     show_convexhull(results.convHull_K2_triangulation,x,y,z,'FaceColor','cyan');
+           
 
+     
+     
+     %visualizando imagem de profundidade
+     title('imagem RGB')
+     imshow(colorImage);
+     figure();
+        
+     title('imagem de profundidade')
+     imshow(255*(depthImage>255))
+
+        
+        
+     %plotando point cloud estática
+     plotPointCloud_Static(results.pointCloudCapturadaSemTratamento);
+     plotPointCloud_Static(results.pointCloudCapturadaTratada);
 
      %Mostrando resultados:
       print_result_datas(results)
       
       
-     %plotando point cloud estática
-       plotPointCloud_Static(results.pointCloudCapturada);
-
-        
-      %aplicando convex hull na ptCloud
-      %[k2,av2] = convexhull_ptCloud(ptCloud,1.1,roi)
-      %[k2,av2]=convexhull_ptCloud_matriz_coluna(ptCloudB,1.1,roi);
-      %av2
       
       %PT8:
       %para que não ocorra um erro em uma nova execução tem que para a
@@ -541,13 +544,13 @@ end
 
 function [results] = pc_Object_Dimension_scanner(depthDevice,colorDevice, scannerParameters)
     
-    background_Distance = scannerParameters.background_Distance;
-    step                = scannerParameters.step;
-    cut_value           = scannerParameters.cut_value;
-    sample_rate         = scannerParameters.sample_rate;
-    method              = scannerParameters.scanningMethod;
-    roi_Slice           = scannerParameters.ROI;
-
+    background_Distance      = scannerParameters.background_Distance;
+    step                     = scannerParameters.step;
+    cut_value                = scannerParameters.cut_value;
+    sample_rate              = scannerParameters.sample_rate;
+    method                   = scannerParameters.scanningMethod;
+    roi_Slice                = scannerParameters.ROI;
+    objectDetectionPrecision = scannerParameters.objectDetectionPrecision;
 
     width=[0,0];                                     %x
     height=[0,0];                                    %y
@@ -566,7 +569,6 @@ function [results] = pc_Object_Dimension_scanner(depthDevice,colorDevice, scanne
         disp("Iniciando Medida da Bagagem...");
         
         %arduinoObj.arduinoMatControl('run',arduinoObj);
-        startTimeSample = tic;
         
         while(break_flag<=10)
 
@@ -575,7 +577,7 @@ function [results] = pc_Object_Dimension_scanner(depthDevice,colorDevice, scanne
             xyzPoints = ptCloudB.Location;
 
 
-            is_there_Object = check_for_object(xyzPoints, 10, background_Distance, cut_value);
+            is_there_Object = check_for_object(xyzPoints, objectDetectionPrecision, background_Distance, cut_value);
     
             if(is_there_Object)
                 
@@ -611,25 +613,23 @@ function [results] = pc_Object_Dimension_scanner(depthDevice,colorDevice, scanne
         
         tempo_amostragem = toc(startTimeSample);
         
+    
         
-        tic
+        inicio_inicio_tempo_tratamento_ptCloud = tic;
         
         ptCloudProcessed = ptCloud_processing(ptCloud_of_the_object_interated, background_Distance, cut_value);
         
-        tempo_tratamento_ptCloud = toc;
+        tempo_tratamento_ptCloud = toc(inicio_inicio_tempo_tratamento_ptCloud);
 
         
-        tic
+       
         
         %Método AABB - testado
-        disp("Dimensões do objeto via AABB:");
-        %[height, width, depth,~] = get_Object_dimensions_to_ptc_column(ptCloudProcessed, height, width, depth,method,step, 10);
+        
+        inicio_tempo_medida_AABB = tic;
         [height, width, depth] = get_boundingBox_AABB(ptCloudProcessed, background_Distance);
-        
-        tempo_medida_AABB = toc;
-        
-        
-        
+        tempo_medida_AABB = toc(inicio_tempo_medida_AABB);
+
         mensurements = sort([(height(2)-height(1))*100 (width(2)-width(1))*100 (depth(2)-depth(1))*100]);
         Hight_AABB = mensurements(3);
         Width_AABB = mensurements(2);
@@ -639,11 +639,13 @@ function [results] = pc_Object_Dimension_scanner(depthDevice,colorDevice, scanne
       
         
         %Método MBB - testado
-        disp("Dimensões do objeto via OMBB:");
         
-        tic
+        
+        inicio_tempo_medida_OMBB = tic;
+        
         [heightMBB, widthMBB, depthMBB,volume] = get_Object_dimensions_to_ptC_with_MBB(ptCloudProcessed, background_Distance);
-        tempo_medida_OMBB = toc;
+        
+        tempo_medida_OMBB = toc(inicio_tempo_medida_OMBB);
         
         heightMBB = heightMBB*100;
         widthMBB = widthMBB*100;
@@ -652,24 +654,13 @@ function [results] = pc_Object_Dimension_scanner(depthDevice,colorDevice, scanne
         
         
         %Método OMBB 3D - testado
-        disp("Dimensões do objeto via OMBB 3D:");
-        tic
+        
+        inicio_tempo_medida_OMBB3D = tic;
         [height_OMBB3D, width_OMBB3D, depth_OMBB3D, volume_OMBB3D] = get_dimensions_with_OMBB_3D(ptCloudProcessed, 'v', 1);
-        tempo_medida_OMBB3D = toc;
         
-%         height_OMBB3D
-%         width_OMBB3D
-%         depth_OMBB3D
-%         volume_OMBB3D
+        tempo_medida_OMBB3D = toc(inicio_tempo_medida_OMBB3D);
 
-        
-        show_Dimentions_and_convexhull(width, height, depth, ptCloudProcessed, background_Distance);
-        
-       
-        ptCloudB = ptCloud_of_the_object_interated;
-        %ptCloudB = ptCloudProcessed;
-        
-        
+
         disp("As dimensões para cada método são [largura X altura X profundidade]]:");
         
         disp("mensurement_AABB:")
@@ -706,17 +697,20 @@ function [results] = pc_Object_Dimension_scanner(depthDevice,colorDevice, scanne
         results.tempo_tratamento_ptCloud          = tempo_tratamento_ptCloud;
         results.tempo_medida                      = tempo_medida_OMBB;
         results.quantidade_de_amostras            = number_of_Obj_samples;
-        results.pointCloudCapturada               = ptCloudB;
-        
+        results.pointCloudCapturadaSemTratamento  = ptCloud_of_the_object_interated;
+        results.pointCloudCapturadaTratada        = ptCloudProcessed;
+        [k2,av2]                                  = get_convexhull_K_Trinagulation(ptCloudProcessed);
+        results.convHull_K2_triangulation         = k2;
+        results.convHull_Av2_Volume               = av2;
         
         
         
        
         %para que não ocorra um erro em uma nova execução tem que parar a
-        %aquisição de frames. uma forma de fazer isso é deletando os objetos de
+        %aquisição de frames. Uma forma de fazer isso é deletando os objetos de
         %aquisição instanciados
-          delete(colorDevice);
-          delete(depthDevice);
+        delete(colorDevice);
+        delete(depthDevice);
       
     catch error
         disp("Erro na função: pc_Object_Dimension_scanner");
@@ -750,16 +744,9 @@ function [number] = meters_to_centimeters(number)
 end
 
 
-function show_Dimentions_and_convexhull(width, height, depth, ptCloud_of_the_object_interated, background_Distance)
-    disp("As Dimensões do objeto são: ");
-    Hight_b_cm = meters_to_centimeters((height(2)-height(1)))
-    Width_b_cm = meters_to_centimeters((width(2)-width(1)))
-    Depth_b_cm = meters_to_centimeters((depth(2)-depth(1)))
-    Volume_m3 = (Hight_b_cm/100) * (Width_b_cm/100) * (Depth_b_cm/100)
-            
+function [k2,av2] = get_convexhull_K_Trinagulation(ptCloud_of_the_object_interated)
     if(~isnan(ptCloud_of_the_object_interated(1,:)))
-         [k2,av2] = convexhull_ptCloud_matriz_coluna(ptCloud_of_the_object_interated, background_Distance);
-         av2
+         [k2,av2] = convexhull_ptCloud_matriz_coluna(ptCloud_of_the_object_interated);
     end
 end
 
@@ -848,40 +835,37 @@ axis equal
 
 end
 
-function [k2,av2] = convexhull_ptCloud_matriz_coluna(ptCloud,background_Distance)
-
- %ptCloud = ptCloud_processing(ptCloud, background_Distance, 0.01);
+function [k2,av2] = convexhull_ptCloud_matriz_coluna(ptCloud)
 
 [x,y,z] = format_Data(ptCloud);
 [k2,av2] = convhull(x,y,z,'Simplify',true);
-
 %[k2,av2] = convhull(xyzPoints(:,1),xyzPoints(:,2),xyzPoints(:,3),'Simplify',true);
-
-show_convexhull(k2,x,y,z,'FaceColor','cyan')
-
 end
 
 
 function [x,y,z] = format_Data(ptCloud)
     
-   xyzPoints = get_ptCloud_matrix(ptCloud);
+    xyzPoints = get_ptCloud_matrix(ptCloud);
 
-    x(1:size(xyzPoints,1))=0;
-    y(1:size(xyzPoints,1))=0;
-    z(1:size(xyzPoints,1))=0;
+    %x(1:size(xyzPoints,1))=0;
+    %y(1:size(xyzPoints,1))=0;
+    %z(1:size(xyzPoints,1))=0;
+    
+    x = double(xyzPoints(:,1));
+    y = double(xyzPoints(:,2));
+    z = double(xyzPoints(:,3));
+    
 
-    indice_vetor=1;
-    for i=1:size(xyzPoints,1)
-        if(~isnan(xyzPoints(i,:)))
-            x(indice_vetor)=xyzPoints(i,1);
-            y(indice_vetor)=xyzPoints(i,2);
-            z(indice_vetor)=xyzPoints(i,3);
-            indice_vetor = indice_vetor+1;
-        end
-    end
+%     indice_vetor=1;
+%     for i=1:size(xyzPoints,1)
+%         if(~isnan(xyzPoints(i,:)))
+%             x(indice_vetor)=xyzPoints(i,1);
+%             y(indice_vetor)=xyzPoints(i,2);
+%             z(indice_vetor)=xyzPoints(i,3);
+%             indice_vetor = indice_vetor+1;
+%         end
+%     end
 end
-
-
 
 
 function [xyzPoints] = get_ptCloud_matrix(ptCloud)

@@ -9,7 +9,11 @@ classdef Results
         tempo_medida = 0;
         quantidade_de_amostras = 0;
         
-        pointCloudCapturada
+        pointCloudCapturadaSemTratamento
+        pointCloudCapturadaTratada
+        
+        convHull_K2_triangulation
+        convHull_Av2_Volume
     end
     
     methods(Static)
