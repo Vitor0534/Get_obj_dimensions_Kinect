@@ -59,7 +59,6 @@ classdef arduinoService
 
 
         function arduinoSerialObj = setupArduinoConection(arduinoSerialObject)
-            delete(instrfind({'Port'},{arduinoSerialObject.PORT}));
             arduinoSerialObject.SerialObject = serial(arduinoSerialObject.PORT);
             arduinoSerialObj = arduinoSerialObject;
         end

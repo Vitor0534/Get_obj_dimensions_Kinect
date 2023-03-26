@@ -145,13 +145,13 @@ function getLuggageDimensionsWithScannerAproach()
     %********************************
     
     %PT3.5:configurando arduino
-%         arduinoObj = arduinoService;
-%         arduinoObj = arduinoObj.constructor('COM12',arduinoObj);
-%         arduinoObj =  arduinoObj.setup('connect',arduinoObj);
+         arduinoObj = arduinoService;
+         arduinoObj = arduinoObj.constructor('COM12',arduinoObj);
+         arduinoObj =  arduinoObj.setup('connect',arduinoObj);
     %*********************************
 
    
-     %PT4: captura 1 frame do kinect para inicializar
+    %PT4: captura 1 frame do kinect para inicializar
         colorImage = colorDevice();
         depthImage = depthDevice();
     %********************************
@@ -205,6 +205,7 @@ function getLuggageDimensionsWithScannerAproach()
     scannerParameters.ROI                           = roi;             %[xmin xmax ymin ymax zmin zmax]
     scannerParameters.scanningMethod                = "Static";
     scannerParameters.objectDetectionPrecision      = 10;
+    scannerParameters.arduinoController             = arduinoObj;
 
 %     background_Distance = 1.1;
 %     cut_value = 0.05;            %distância para segmentar a mala do fundo
@@ -236,27 +237,30 @@ function getLuggageDimensionsWithScannerAproach()
     
      
      
-     %visualizando imagem de profundidade
-        title('imagem RGB')
-        imshow(colorImage);
-        figure();
-        
-        title('imagem de profundidade')
-        imshow(255*(depthImage>255))
+     [x,y,z] = format_Data(results.pointCloudCapturadaTratada);
+     show_convexhull(results.convHull_K2_triangulation,x,y,z,'FaceColor','cyan');
+           
 
+     
+     
+     %visualizando imagem de profundidade
+     title('imagem RGB')
+     imshow(colorImage);
+     figure();
+        
+     title('imagem de profundidade')
+     imshow(255*(depthImage>255))
+
+        
+        
+     %plotando point cloud estática
+     plotPointCloud_Static(results.pointCloudCapturadaSemTratamento);
+     plotPointCloud_Static(results.pointCloudCapturadaTratada);
 
      %Mostrando resultados:
       print_result_datas(results)
       
       
-     %plotando point cloud estática
-       plotPointCloud_Static(results.pointCloudCapturada);
-
-        
-      %aplicando convex hull na ptCloud
-      %[k2,av2] = convexhull_ptCloud(ptCloud,1.1,roi)
-      %[k2,av2]=convexhull_ptCloud_matriz_coluna(ptCloudB,1.1,roi);
-      %av2
       
       %PT8:
       %para que não ocorra um erro em uma nova execução tem que para a
@@ -548,6 +552,7 @@ function [results] = pc_Object_Dimension_scanner(depthDevice,colorDevice, scanne
     method                   = scannerParameters.scanningMethod;
     roi_Slice                = scannerParameters.ROI;
     objectDetectionPrecision = scannerParameters.objectDetectionPrecision;
+    arduinoObj = scannerParameters.arduinoController
 
     width=[0,0];                                     %x
     height=[0,0];                                    %y
@@ -565,7 +570,7 @@ function [results] = pc_Object_Dimension_scanner(depthDevice,colorDevice, scanne
         
         disp("Iniciando Medida da Bagagem...");
         
-        %arduinoObj.arduinoMatControl('run',arduinoObj);
+        arduinoObj.arduinoMatControl('run',arduinoObj);
         
         while(break_flag<=10)
 
@@ -694,9 +699,11 @@ function [results] = pc_Object_Dimension_scanner(depthDevice,colorDevice, scanne
         results.tempo_tratamento_ptCloud          = tempo_tratamento_ptCloud;
         results.tempo_medida                      = tempo_medida_OMBB;
         results.quantidade_de_amostras            = number_of_Obj_samples;
-        results.pointCloudCapturadaCompleta       = ptCloudB;
+        results.pointCloudCapturadaSemTratamento  = ptCloud_of_the_object_interated;
         results.pointCloudCapturadaTratada        = ptCloudProcessed;
-        results.
+        [k2,av2]                                  = get_convexhull_K_Trinagulation(ptCloudProcessed);
+        results.convHull_K2_triangulation         = k2;
+        results.convHull_Av2_Volume               = av2;
         
         
         
@@ -834,11 +841,7 @@ function [k2,av2] = convexhull_ptCloud_matriz_coluna(ptCloud)
 
 [x,y,z] = format_Data(ptCloud);
 [k2,av2] = convhull(x,y,z,'Simplify',true);
-
 %[k2,av2] = convhull(xyzPoints(:,1),xyzPoints(:,2),xyzPoints(:,3),'Simplify',true);
-
-show_convexhull(k2,x,y,z,'FaceColor','cyan')
-
 end
 
 
@@ -846,22 +849,25 @@ function [x,y,z] = format_Data(ptCloud)
     
     xyzPoints = get_ptCloud_matrix(ptCloud);
 
-    x(1:size(xyzPoints,1))=0;
-    y(1:size(xyzPoints,1))=0;
-    z(1:size(xyzPoints,1))=0;
+    %x(1:size(xyzPoints,1))=0;
+    %y(1:size(xyzPoints,1))=0;
+    %z(1:size(xyzPoints,1))=0;
+    
+    x = double(xyzPoints(:,1));
+    y = double(xyzPoints(:,2));
+    z = double(xyzPoints(:,3));
+    
 
-    indice_vetor=1;
-    for i=1:size(xyzPoints,1)
-        if(~isnan(xyzPoints(i,:)))
-            x(indice_vetor)=xyzPoints(i,1);
-            y(indice_vetor)=xyzPoints(i,2);
-            z(indice_vetor)=xyzPoints(i,3);
-            indice_vetor = indice_vetor+1;
-        end
-    end
+%     indice_vetor=1;
+%     for i=1:size(xyzPoints,1)
+%         if(~isnan(xyzPoints(i,:)))
+%             x(indice_vetor)=xyzPoints(i,1);
+%             y(indice_vetor)=xyzPoints(i,2);
+%             z(indice_vetor)=xyzPoints(i,3);
+%             indice_vetor = indice_vetor+1;
+%         end
+%     end
 end
-
-
 
 
 function [xyzPoints] = get_ptCloud_matrix(ptCloud)

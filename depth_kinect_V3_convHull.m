@@ -145,9 +145,9 @@ function getLuggageDimensionsWithScannerAproach()
     %********************************
     
     %PT3.5:configurando arduino
-%         arduinoObj = arduinoService;
-%         arduinoObj = arduinoObj.constructor('COM12',arduinoObj);
-%         arduinoObj =  arduinoObj.setup('connect',arduinoObj);
+         arduinoObj = arduinoService;
+         arduinoObj = arduinoObj.constructor('COM3',9600, arduinoObj);
+         arduinoObj =  arduinoObj.setup('connect',arduinoObj);
     %*********************************
 
    
@@ -205,6 +205,7 @@ function getLuggageDimensionsWithScannerAproach()
     scannerParameters.ROI                           = roi;             %[xmin xmax ymin ymax zmin zmax]
     scannerParameters.scanningMethod                = "Static";
     scannerParameters.objectDetectionPrecision      = 10;
+    scannerParameters.arduinoController             = arduinoObj;
 
 %     background_Distance = 1.1;
 %     cut_value = 0.05;            %distância para segmentar a mala do fundo
@@ -265,8 +266,10 @@ function getLuggageDimensionsWithScannerAproach()
       %para que não ocorra um erro em uma nova execução tem que para a
       %aquisição de frames uma forma de fazer isso é deletando os objetos de
       %aquisição instanciados
-        delete(colorDevice);
-        delete(depthDevice);
+      delete(colorDevice);
+      delete(depthDevice);
+        
+      arduinoObj.setup('disconnect',arduinoObj);
         
         
     catch error
@@ -274,6 +277,8 @@ function getLuggageDimensionsWithScannerAproach()
         disp(error);
         delete(colorDevice);
         delete(depthDevice);
+        
+        arduinoObj.setup('disconnect',arduinoObj);
     end
  
 end
@@ -551,6 +556,7 @@ function [results] = pc_Object_Dimension_scanner(depthDevice,colorDevice, scanne
     method                   = scannerParameters.scanningMethod;
     roi_Slice                = scannerParameters.ROI;
     objectDetectionPrecision = scannerParameters.objectDetectionPrecision;
+    arduinoObj               = scannerParameters.arduinoController;
 
     width=[0,0];                                     %x
     height=[0,0];                                    %y
@@ -568,7 +574,8 @@ function [results] = pc_Object_Dimension_scanner(depthDevice,colorDevice, scanne
         
         disp("Iniciando Medida da Bagagem...");
         
-        %arduinoObj.arduinoMatControl('run',arduinoObj);
+        
+        arduinoObj.arduinoMatControl('run',arduinoObj);
         
         while(break_flag<=10)
 
@@ -609,7 +616,7 @@ function [results] = pc_Object_Dimension_scanner(depthDevice,colorDevice, scanne
 
         end
         
-        %arduinoObj.arduinoMatControl('stop',arduinoObj);
+        arduinoObj.arduinoMatControl('stop',arduinoObj);
         
         tempo_amostragem = toc(startTimeSample);
         
