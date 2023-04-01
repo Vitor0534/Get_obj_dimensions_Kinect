@@ -546,6 +546,15 @@ end
 
 
 %To REFACTOR: confira se é possível retirar o dimensions_Check
+%             tente retirar a concatenação é substituir por algo como:
+%             Passo 1: ptCloud_of_the_object_interated = NaN(qtd linhas provaveis de X rois,qtd colunas provaveis de X rois)
+%             Passo 2: dentro do loop ->
+%                            i = 1
+%                            ptCloud_of_the_object_interated(i:1:(i-1)+size(amostra,1),1:1:size(amostra,2)) = amostra(:,:) + [0 (step*(number_of_Obj_samples+1)) 0]
+%                            i = i + size(amostra,1)
+%             Passo 3: fora loop limpar NaNs 
+%                            ptCloud_of_the_object_interated(~isnan(k(:,1)),~isnan(k(1,:)))
+
 
 function [results] = pc_Object_Dimension_scanner(depthDevice,colorDevice, scannerParameters)
     
@@ -599,7 +608,8 @@ function [results] = pc_Object_Dimension_scanner(depthDevice,colorDevice, scanne
                
                 %Se a point cloud é adquirida no sentido horário colocar (+) se não colocar (-)
                 ptCloud_of_the_object_interated = [ptCloud_of_the_object_interated;
-                                                  (xyzPoints(:,:) - [0 (step*(number_of_Obj_samples+1)) 0])];
+                                                  (xyzPoints(:,:) - [0 (step*(number_of_Obj_samples+1)) 0])
+                                                  ];
 
                 number_of_Obj_samples = number_of_Obj_samples +1;
             
