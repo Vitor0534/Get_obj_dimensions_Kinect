@@ -576,7 +576,11 @@ function [results] = pc_Object_Dimension_scanner(depthDevice,colorDevice, scanne
     dimensions_Check=0;
     break_flag=0;
     
-    ptCloud_of_the_object_interated=[nan nan nan];
+    
+    xyzPoints = aply_roi_PtCloud(get_Pt_Cloud_Frame(depthDevice,colorDevice,0),roi_Slice).Location;
+    
+    %ptCloud_of_the_object_interated = [nan nan nan];
+    ptCloud_of_the_object_interated = NaN(size(xyzPoints,1)*30,size(xyzPoints,2));
     
     number_of_Obj_samples = 0;
     startTimeSample       = 0;
@@ -588,6 +592,7 @@ function [results] = pc_Object_Dimension_scanner(depthDevice,colorDevice, scanne
         
         arduinoObj.arduinoMatControl('run',arduinoObj);
         
+        samplePosition = 1;
         while(break_flag<=10)
 
             %coletando frames da matriz de pontos
@@ -606,12 +611,16 @@ function [results] = pc_Object_Dimension_scanner(depthDevice,colorDevice, scanne
                 dimensions_Check = 0;
                 break_flag = 0;
 
-                ptCloud_of_the_object_interated(1,:) = xyzPoints(1,:);
+                %ptCloud_of_the_object_interated(1,:) = xyzPoints(1,:);
                
                 %Se a point cloud é adquirida no sentido horário colocar (+) se não colocar (-)
-                ptCloud_of_the_object_interated = [ptCloud_of_the_object_interated;
-                                                  (xyzPoints(:,:) - [0 (step*(number_of_Obj_samples+1)) 0])
-                                                  ];
+%                 ptCloud_of_the_object_interated = [ptCloud_of_the_object_interated;
+%                                                   (xyzPoints(:,:) - [0 (step*(number_of_Obj_samples+1)) 0])
+%                                                   ];
+
+                
+                ptCloud_of_the_object_interated(samplePosition:1:(samplePosition-1)+ size(xyzPoints,1),1:1:size(xyzPoints,2)) = (xyzPoints(:,:) - [0 (step*(number_of_Obj_samples+1)) 0]);
+                samplePosition = samplePosition + size(xyzPoints,1);
 
                 number_of_Obj_samples = number_of_Obj_samples +1;
             
@@ -628,9 +637,15 @@ function [results] = pc_Object_Dimension_scanner(depthDevice,colorDevice, scanne
 
         end
         
+        tempo_amostragem = toc(startTimeSample);
+        
+        
         arduinoObj.arduinoMatControl('stop',arduinoObj);
         
-        tempo_amostragem = toc(startTimeSample);
+        
+        ptCloud_of_the_object_interated = ptCloud_of_the_object_interated(~isnan(ptCloud_of_the_object_interated(:,1)),~isnan(ptCloud_of_the_object_interated(1,:)));
+        
+        
         
     
         
@@ -935,7 +950,6 @@ function [xyzPoints_result] = ptCloud_processing(ptCloud, background_Distance, c
     for i=1:xyzPoints_Amount_rows
         if(~isnan(xyzPoints(i,:)))
             if((xyzPoints(i,3) <= (background_Distance - cut_value)))
-                %xyzPoints_result = [xyzPoints_result; xyzPoints(i,:); (xyzPoints(i,:)+[0 0 depth(1)])];
                 xyzPoints_result = [xyzPoints_result; xyzPoints(i,:); [xyzPoints(i,1) xyzPoints(i,2)  background_Distance]];
             end
         end
