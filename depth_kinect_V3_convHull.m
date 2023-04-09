@@ -948,11 +948,9 @@ function [xyzPoints_result] = ptCloud_processing(ptCloud, background_Distance, c
     
     %Segmentando e adiciponando base na point cloud
     for i=1:xyzPoints_Amount_rows
-        if(~isnan(xyzPoints(i,:)))
             if((xyzPoints(i,3) <= (background_Distance - cut_value)))
                 xyzPoints_result = [xyzPoints_result; xyzPoints(i,:); [xyzPoints(i,1) xyzPoints(i,2)  background_Distance]];
             end
-        end
     end
     
     if(xyzPoints_Amount_rows>=2)
