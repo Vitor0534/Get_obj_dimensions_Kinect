@@ -201,7 +201,7 @@ function getLuggageDimensionsWithScannerAproach()
     scannerParameters.background_Distance           = 1.13;
     scannerParameters.cut_value                     = 0.08;            %distância para segmentar a mala do fundo
     scannerParameters.step                          = 0.065;           %passo de amostragem
-    scannerParameters.sample_rate                   = 20;              %hz
+    scannerParameters.sample_rate                   = 5;               %hz
     scannerParameters.ROI                           = roi;             %[xmin xmax ymin ymax zmin zmax]
     scannerParameters.scanningMethod                = "Static";
     scannerParameters.objectDetectionPrecision      = 10;
@@ -546,16 +546,6 @@ end
 
 
 %To REFACTOR: confira se é possível retirar o dimensions_Check
-%             tente retirar a concatenação é substituir por algo como:
-%             Passo 1: ptCloud_of_the_object_interated = NaN(qtd linhas provaveis de X rois,qtd colunas provaveis de X rois)
-%             Passo 2: dentro do loop ->
-%                            i = 1
-%                            ptCloud_of_the_object_interated(i:1:(i-1)+size(amostra,1),1:1:size(amostra,2)) = amostra(:,:) + [0 (step*(number_of_Obj_samples+1)) 0]
-%                            i = i + size(amostra,1)
-%             Passo 3: fora loop limpar NaNs 
-%                            ptCloud_of_the_object_interated(~isnan(ptCloud_of_the_object_interated(:,1)),~isnan(ptCloud_of_the_object_interated(1,:)))
-%             caso a fique maior que o previto, o espaço é sempre
-%             preenchido com zeros, cuidado com isso
 
 
 function [results] = pc_Object_Dimension_scanner(depthDevice,colorDevice, scannerParameters)
@@ -579,7 +569,9 @@ function [results] = pc_Object_Dimension_scanner(depthDevice,colorDevice, scanne
     
     xyzPoints = aply_roi_PtCloud(get_Pt_Cloud_Frame(depthDevice,colorDevice,0),roi_Slice).Location;
     
-    %ptCloud_of_the_object_interated = [nan nan nan];
+    %A matrix resultante é inicializada com 30 vezes o tamanho de uma
+    %amostra. É uma estratégia para reduzir tempo de armazenamento de dados
+    %no matlab
     ptCloud_of_the_object_interated = NaN(size(xyzPoints,1)*30,size(xyzPoints,2));
     
     number_of_Obj_samples = 0;
@@ -611,15 +603,9 @@ function [results] = pc_Object_Dimension_scanner(depthDevice,colorDevice, scanne
                 dimensions_Check = 0;
                 break_flag = 0;
 
-                %ptCloud_of_the_object_interated(1,:) = xyzPoints(1,:);
                
-                %Se a point cloud é adquirida no sentido horário colocar (+) se não colocar (-)
-%                 ptCloud_of_the_object_interated = [ptCloud_of_the_object_interated;
-%                                                   (xyzPoints(:,:) - [0 (step*(number_of_Obj_samples+1)) 0])
-%                                                   ];
-
-                
-                ptCloud_of_the_object_interated(samplePosition:1:(samplePosition-1)+ size(xyzPoints,1),1:1:size(xyzPoints,2)) = (xyzPoints(:,:) - [0 (step*(number_of_Obj_samples+1)) 0]);
+                %Se a point cloud é adquirida no sentido horário colocar (-) se não colocar (+)
+                ptCloud_of_the_object_interated(samplePosition:1:(samplePosition-1) + size(xyzPoints,1), 1:1:size(xyzPoints,2)) = (xyzPoints(:,:) - [0 (step*(number_of_Obj_samples+1)) 0]);
                 samplePosition = samplePosition + size(xyzPoints,1);
 
                 number_of_Obj_samples = number_of_Obj_samples +1;
@@ -633,7 +619,7 @@ function [results] = pc_Object_Dimension_scanner(depthDevice,colorDevice, scanne
                 dimensions_Check=dimensions_Check+1;
             end
            
-           pause(1/sample_rate); %Pause amostragem
+           pause(1/sample_rate); 
 
         end
         
@@ -1010,28 +996,6 @@ ylabel('Y(m)')
 zlabel('Z(m)')
 
 end
-
-
-% function [pointCloudInformations] = get_boundingBoxInformation(ptCloud, background_Distance, cut_value)
-% 
-%      xyzPoints_result = ptCloud_processing(ptCloud, background_Distance, cut_value);
-%      pointCloudInformations = regionprops3(xyzPoints_result,'basic');
-%      
-% end
-
-
-% function [bboxLidar,indices] = get_boundingBoxInformationV2(ptCloud)
-% 
-%    bboxImage =[];
-%    intrinsics =[];
-%    tform = [];
-%    [bboxLidar,indices] = bboxCameraToLidar(bboxImage,ptCloud,intrinsics,tform,'ClusterThreshold',1)
-% 
-%    figure(42)
-%    pcshow(pc)
-%    showShape('cuboid',bboxLidar,'Opacity',0.5,'Color','green')
-%     
-% end
 
 
 
