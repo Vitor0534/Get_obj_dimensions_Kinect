@@ -553,7 +553,9 @@ end
 %                            ptCloud_of_the_object_interated(i:1:(i-1)+size(amostra,1),1:1:size(amostra,2)) = amostra(:,:) + [0 (step*(number_of_Obj_samples+1)) 0]
 %                            i = i + size(amostra,1)
 %             Passo 3: fora loop limpar NaNs 
-%                            ptCloud_of_the_object_interated(~isnan(k(:,1)),~isnan(k(1,:)))
+%                            ptCloud_of_the_object_interated(~isnan(ptCloud_of_the_object_interated(:,1)),~isnan(ptCloud_of_the_object_interated(1,:)))
+%             caso a fique maior que o previto, o espaço é sempre
+%             preenchido com zeros, cuidado com isso
 
 
 function [results] = pc_Object_Dimension_scanner(depthDevice,colorDevice, scannerParameters)
