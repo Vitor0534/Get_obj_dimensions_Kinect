@@ -18,7 +18,7 @@ classdef Results
     
     methods(Static)
         
-        function [volume] = get_volume()
+        function [volume] = get_volume_bounding_box()
            volume = Height*Width*Depth;
         end
         
