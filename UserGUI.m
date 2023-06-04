@@ -22,7 +22,7 @@ function varargout = UserGUI(varargin)
 
 % Edit the above text to modify the response to help UserGUI
 
-% Last Modified by GUIDE v2.5 03-Jun-2023 17:24:05
+% Last Modified by GUIDE v2.5 04-Jun-2023 16:22:56
 
 % Begin initialization code - DO NOT EDIT
 gui_Singleton = 1;
@@ -180,27 +180,79 @@ lugaggeScanner = LugaggeScanner();
 
 lugaggeScanner.scannerParameters = ScannerParameters();
 
-lugaggeScanner.getLuggageDimensionsWithScannerAproach(lugaggeScanner);
+[results] = lugaggeScanner.getLuggageDimensionsWithScannerAproach(lugaggeScanner);
 
-% axes(handles.axes1)
-% plot(graphF.getSinValues(graphF));
-set(handles.dephResult,'String','Teste funcionou bem')
+axes(handles.axes1)
+pcshow(results.pointCloudCapturadaTratada);
+
+axes(handles.axes2)
+lugaggeScanner.plotConvexHullOfPtCloud(results.pointCloudCapturadaTratada, results.convHull_K2_triangulation);
+
+set(handles.heighResult,'String',results.Height);
+set(handles.widthResult,'String',results.Width);
+set(handles.dephResult,'String',results.Depth);
+
+
+handLuggageDimentionLimits    = [ 
+                                  get(handles.handLuggageLenghtLimit,'UserData')    
+                                  get(handles.handLuggageWidthLimit,'UserData')   
+                                  get(handles.handLuggageDepthLimit,'UserData')
+                                 ]
+                             
+checkedLuggageDimentionLimits = [
+                                  get(handles.checkedBaggageLenghtLimit,'UserData')
+                                  get(handles.checkedBaggageWidthLimit,'UserData')
+                                  get(handles.checkedBaggageDepthLimit,'UserData')
+                                ]
+                                
+luggageDimensionsMensured     = [
+                                 results.Height
+                                 results.Width
+                                 results.Depth
+                                 ]
+
+approbationMensage = getLuggageAprobationMensage(handLuggageDimentionLimits, checkedLuggageDimentionLimits, luggageDimensionsMensured);
+set(handles.luggageApprobation,'String',approbationMensage);
 
 
 
 
-function edit11_Callback(hObject, eventdata, handles)
-% hObject    handle to edit11 (see GCBO)
+function [mensage] = getLuggageAprobationMensage(handLuggageDimentionLimits, checkedLuggageDimentionLimits, luggageDimensionsMensured)
+    mensage = false;
+    if(validadeLuggageDimensions(handLuggageDimentionLimits, luggageDimensionsMensured))
+        mensage = 'Bagagem aprovada como de mão';
+    elseif(~mensage && validadeLuggageDimensions(checkedLuggageDimentionLimits, luggageDimensionsMensured))
+        mensage = 'Bagagem aprovada como despacho';
+    else
+        mensage = 'Bagagem fora dos limites permitidos';
+    end
+        
+
+
+
+function [result] = validadeLuggageDimensions(LuggageDimentionLimits, luggageDimensionsMensured)
+    veryArray = luggageDimensionsMensured <= LuggageDimentionLimits;    
+    if(veryArray(:) ~= 0)
+        result = true;
+    else
+        result = false;
+    end
+    
+
+function checkedBaggageLenghtLimit_Callback(hObject, eventdata, handles)
+% hObject    handle to checkedBaggageLenghtLimit (see GCBO)
 % eventdata  reserved - to be defined in a future version of MATLAB
 % handles    structure with handles and user data (see GUIDATA)
 
-% Hints: get(hObject,'String') returns contents of edit11 as text
-%        str2double(get(hObject,'String')) returns contents of edit11 as a double
+% Hints: get(hObject,'String') returns contents of checkedBaggageLenghtLimit as text
+%        str2double(get(hObject,'String')) returns contents of checkedBaggageLenghtLimit as a double
+value = str2double(get(hObject,'String')); 
+set(hObject,'UserData',value)
 
 
 % --- Executes during object creation, after setting all properties.
-function edit11_CreateFcn(hObject, eventdata, handles)
-% hObject    handle to edit11 (see GCBO)
+function checkedBaggageLenghtLimit_CreateFcn(hObject, eventdata, handles)
+% hObject    handle to checkedBaggageLenghtLimit (see GCBO)
 % eventdata  reserved - to be defined in a future version of MATLAB
 % handles    empty - handles not created until after all CreateFcns called
 
@@ -212,18 +264,20 @@ end
 
 
 
-function edit12_Callback(hObject, eventdata, handles)
-% hObject    handle to edit12 (see GCBO)
+function checkedBaggageWidthLimit_Callback(hObject, eventdata, handles)
+% hObject    handle to checkedBaggageWidthLimit (see GCBO)
 % eventdata  reserved - to be defined in a future version of MATLAB
 % handles    structure with handles and user data (see GUIDATA)
 
-% Hints: get(hObject,'String') returns contents of edit12 as text
-%        str2double(get(hObject,'String')) returns contents of edit12 as a double
+% Hints: get(hObject,'String') returns contents of checkedBaggageWidthLimit as text
+%        str2double(get(hObject,'String')) returns contents of checkedBaggageWidthLimit as a double
+value = str2double(get(hObject,'String')); 
+set(hObject,'UserData',value)
 
 
 % --- Executes during object creation, after setting all properties.
-function edit12_CreateFcn(hObject, eventdata, handles)
-% hObject    handle to edit12 (see GCBO)
+function checkedBaggageWidthLimit_CreateFcn(hObject, eventdata, handles)
+% hObject    handle to checkedBaggageWidthLimit (see GCBO)
 % eventdata  reserved - to be defined in a future version of MATLAB
 % handles    empty - handles not created until after all CreateFcns called
 
@@ -235,18 +289,20 @@ end
 
 
 
-function edit13_Callback(hObject, eventdata, handles)
-% hObject    handle to edit13 (see GCBO)
+function checkedBaggageDepthLimit_Callback(hObject, eventdata, handles)
+% hObject    handle to checkedBaggageDepthLimit (see GCBO)
 % eventdata  reserved - to be defined in a future version of MATLAB
 % handles    structure with handles and user data (see GUIDATA)
 
-% Hints: get(hObject,'String') returns contents of edit13 as text
-%        str2double(get(hObject,'String')) returns contents of edit13 as a double
+% Hints: get(hObject,'String') returns contents of checkedBaggageDepthLimit as text
+%        str2double(get(hObject,'String')) returns contents of checkedBaggageDepthLimit as a double
+value = str2double(get(hObject,'String')); 
+set(hObject,'UserData',value)
 
 
 % --- Executes during object creation, after setting all properties.
-function edit13_CreateFcn(hObject, eventdata, handles)
-% hObject    handle to edit13 (see GCBO)
+function checkedBaggageDepthLimit_CreateFcn(hObject, eventdata, handles)
+% hObject    handle to checkedBaggageDepthLimit (see GCBO)
 % eventdata  reserved - to be defined in a future version of MATLAB
 % handles    empty - handles not created until after all CreateFcns called
 
@@ -258,18 +314,20 @@ end
 
 
 
-function edit7_Callback(hObject, eventdata, handles)
-% hObject    handle to edit7 (see GCBO)
+function handLuggageLenghtLimit_Callback(hObject, eventdata, handles)
+% hObject    handle to handLuggageLenghtLimit (see GCBO)
 % eventdata  reserved - to be defined in a future version of MATLAB
 % handles    structure with handles and user data (see GUIDATA)
 
-% Hints: get(hObject,'String') returns contents of edit7 as text
-%        str2double(get(hObject,'String')) returns contents of edit7 as a double
+% Hints: get(hObject,'String') returns contents of handLuggageLenghtLimit as text
+%        str2double(get(hObject,'String')) returns contents of handLuggageLenghtLimit as a double
+value = str2double(get(hObject,'String')); 
+set(hObject,'UserData',value)
 
 
 % --- Executes during object creation, after setting all properties.
-function edit7_CreateFcn(hObject, eventdata, handles)
-% hObject    handle to edit7 (see GCBO)
+function handLuggageLenghtLimit_CreateFcn(hObject, eventdata, handles)
+% hObject    handle to handLuggageLenghtLimit (see GCBO)
 % eventdata  reserved - to be defined in a future version of MATLAB
 % handles    empty - handles not created until after all CreateFcns called
 
@@ -281,18 +339,20 @@ end
 
 
 
-function edit8_Callback(hObject, eventdata, handles)
-% hObject    handle to edit8 (see GCBO)
+function handLuggageWidthLimit_Callback(hObject, eventdata, handles)
+% hObject    handle to handLuggageWidthLimit (see GCBO)
 % eventdata  reserved - to be defined in a future version of MATLAB
 % handles    structure with handles and user data (see GUIDATA)
 
-% Hints: get(hObject,'String') returns contents of edit8 as text
-%        str2double(get(hObject,'String')) returns contents of edit8 as a double
+% Hints: get(hObject,'String') returns contents of handLuggageWidthLimit as text
+%        str2double(get(hObject,'String')) returns contents of handLuggageWidthLimit as a double
+value = str2double(get(hObject,'String')); 
+set(hObject,'UserData',value)
 
 
 % --- Executes during object creation, after setting all properties.
-function edit8_CreateFcn(hObject, eventdata, handles)
-% hObject    handle to edit8 (see GCBO)
+function handLuggageWidthLimit_CreateFcn(hObject, eventdata, handles)
+% hObject    handle to handLuggageWidthLimit (see GCBO)
 % eventdata  reserved - to be defined in a future version of MATLAB
 % handles    empty - handles not created until after all CreateFcns called
 
@@ -304,18 +364,20 @@ end
 
 
 
-function edit9_Callback(hObject, eventdata, handles)
-% hObject    handle to edit9 (see GCBO)
+function handLuggageDepthLimit_Callback(hObject, eventdata, handles)
+% hObject    handle to handLuggageDepthLimit (see GCBO)
 % eventdata  reserved - to be defined in a future version of MATLAB
 % handles    structure with handles and user data (see GUIDATA)
 
-% Hints: get(hObject,'String') returns contents of edit9 as text
-%        str2double(get(hObject,'String')) returns contents of edit9 as a double
+% Hints: get(hObject,'String') returns contents of handLuggageDepthLimit as text
+%        str2double(get(hObject,'String')) returns contents of handLuggageDepthLimit as a double
+value = str2double(get(hObject,'String')); 
+set(hObject,'UserData',value)
 
 
 % --- Executes during object creation, after setting all properties.
-function edit9_CreateFcn(hObject, eventdata, handles)
-% hObject    handle to edit9 (see GCBO)
+function handLuggageDepthLimit_CreateFcn(hObject, eventdata, handles)
+% hObject    handle to handLuggageDepthLimit (see GCBO)
 % eventdata  reserved - to be defined in a future version of MATLAB
 % handles    empty - handles not created until after all CreateFcns called
 
@@ -420,3 +482,17 @@ function luggageApprobation_CreateFcn(hObject, eventdata, handles)
 if ispc && isequal(get(hObject,'BackgroundColor'), get(0,'defaultUicontrolBackgroundColor'))
     set(hObject,'BackgroundColor','white');
 end
+
+
+% --- Executes on mouse press over axes background.
+function axes1_ButtonDownFcn(hObject, eventdata, handles)
+% hObject    handle to axes1 (see GCBO)
+% eventdata  reserved - to be defined in a future version of MATLAB
+% handles    structure with handles and user data (see GUIDATA)
+
+
+% --- Executes on mouse press over axes background.
+function axes2_ButtonDownFcn(hObject, eventdata, handles)
+% hObject    handle to axes2 (see GCBO)
+% eventdata  reserved - to be defined in a future version of MATLAB
+% handles    structure with handles and user data (see GUIDATA)

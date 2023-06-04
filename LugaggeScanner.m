@@ -25,6 +25,11 @@ classdef LugaggeScanner
             result = luggageScannerObj.scannerResults;
         end
         
+        function plotConvexHullOfPtCloud(pointCloud, convHull_K2_triangulation)
+                [x,y,z] = format_Data(pointCloud);
+                show_convexhull(convHull_K2_triangulation,x,y,z,'FaceColor','cyan'); 
+        end
+        
     end
 end
 
@@ -258,15 +263,15 @@ function [results] = getLuggageDimensionsWithScannerAproach(luggageScannerObj)
      [results] = pc_Object_Dimension_scanner(depthDevice,colorDevice,scannerParameters);
     
      
-     
-     [x,y,z] = format_Data(results.pointCloudCapturadaTratada);
-     show_convexhull(results.convHull_K2_triangulation,x,y,z,'FaceColor','cyan');
+     %plotando convexhull da point cloud obtida
+%      [x,y,z] = format_Data(results.pointCloudCapturadaTratada);
+%      show_convexhull(results.convHull_K2_triangulation,x,y,z,'FaceColor','cyan');
            
 
         
      %plotando point cloud estática
-     plotPointCloud_Static(results.pointCloudCapturadaSemTratamento);
-     plotPointCloud_Static(results.pointCloudCapturadaTratada);
+%      plotPointCloud_Static(results.pointCloudCapturadaSemTratamento);
+%      plotPointCloud_Static(results.pointCloudCapturadaTratada);
 
      %Mostrando resultados:
       print_result_datas(results)
@@ -1065,7 +1070,7 @@ function [height,width,depth,volume, rotmat,cornerpoints,surface] = get_dimensio
    %OMBB 3D
    [rotmat,cornerpoints,volume,surface] = minboundbox(double(ptCloud(:,1)),double(ptCloud(:,2)),double(ptCloud(:,3)),metric,level); 
 
-   plot_OMBB_3D_on_ptCloud(ptCloud,cornerpoints);
+   %plot_OMBB_3D_on_ptCloud(ptCloud,cornerpoints);
    
    [height,width,depth] = compute_dimentions_OMBB3D(cornerpoints);
    
