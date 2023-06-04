@@ -1,5 +1,6 @@
 function varargout = UserGUI(varargin)
 % USERGUI MATLAB code for UserGUI.fig
+%      type >> guide on the comand window to edit this interface
 %      USERGUI, by itself, creates a new USERGUI or raises the existing
 %      singleton*.
 %
