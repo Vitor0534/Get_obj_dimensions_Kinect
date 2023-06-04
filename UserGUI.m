@@ -176,15 +176,14 @@ function start_pushbutton_Callback(hObject, eventdata, handles)
 % eventdata  reserved - to be defined in a future version of MATLAB
 % handles    structure with handles and user data (see GUIDATA)
 
-graphF = graphFactory;
+lugaggeScanner = LugaggeScanner();
 
-step  = get(handles.heighResult,'UserData');
-limit = get(handles.widthResult,'UserData');
+lugaggeScanner.scannerParameters = ScannerParameters();
 
-graphF.array_values_to_generate_graph = (1:step:limit);
- 
-axes(handles.axes1)
-plot(graphF.getSinValues(graphF));
+lugaggeScanner.getLuggageDimensionsWithScannerAproach(lugaggeScanner);
+
+% axes(handles.axes1)
+% plot(graphF.getSinValues(graphF));
 set(handles.dephResult,'String','Teste funcionou bem')
 
 

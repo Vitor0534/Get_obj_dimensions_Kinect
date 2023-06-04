@@ -20,9 +20,9 @@ classdef LugaggeScanner
     methods(Static)
         
         %Paso 0: chamada de funções
-        function [result] = getLuggageDimensionsWithScannerAproach(luggageScannerObj)
+        function [sin_result] = getLuggageDimensionsWithScannerAproach(luggageScannerObj)
             luggageScannerObj.scannerResults = getLuggageDimensionsWithScannerAproach(luggageScannerObj);
-            result = luggageScannerObj.scannerResults;
+            sin_result = luggageScannerObj.scannerResults;
         end
         
     end
