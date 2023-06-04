@@ -9,6 +9,24 @@
 
 
 
+classdef LugaggeScanner
+    properties  
+        array_values_to_generate_graph  = []     
+        
+    end
+    
+    methods(Static)
+        
+        function [sin_result] = getSinValues(graphFactoryOBJ)
+            sin_result = sin_graph_Call(graphFactoryOBJ.array_values_to_generate_graph);
+        end
+        
+    end
+end
+
+
+
+
 %Paso 0: chamada de funções
 getLuggageDimensionsWithScannerAproach();
 
@@ -917,10 +935,10 @@ end
 
 %o processo é feito em dois passos:
 %   1- corta o fundo usando a medida conhecida background_Distance
-%   2- pega o ponto da matriz obtida na amostragem e reflete cria um ponto 
-%      no mesmo xy so que z == background_distance.
-%      isso vai gerar uma superfície para a base e permitir que o convexhull 
-%      obtenha volume total do objeto
+%   2- pega o ponto da matriz obtida na amostragem e reflete na base (cria um ponto 
+%      no mesmo xy so que z == background_distance).
+%      isso vai gerar uma superfície para a base e auxiliar o convexhull 
+%      a obter o volume total do objeto
 function [xyzPoints_result] = ptCloud_processing(ptCloud, background_Distance, cut_value)
     
     xyzPoints = get_ptCloud_matrix(ptCloud);
@@ -1062,14 +1080,17 @@ end
 
 
 function [height,width,depth] = compute_dimentions_OMBB3D(cornerpoints)
+
     Mensurement1 = sqrt(((cornerpoints(1,1)-cornerpoints(2,1))^2+(cornerpoints(1,2)-cornerpoints(2,2))^2+(cornerpoints(1,3)-cornerpoints(2,3))^2))*100;
     Mensurement2 = sqrt(((cornerpoints(2,1)-cornerpoints(3,1))^2+(cornerpoints(2,2)-cornerpoints(3,2))^2+(cornerpoints(2,3)-cornerpoints(3,3))^2))*100;
     Mensurement3 = sqrt(((cornerpoints(1,1)-cornerpoints(5,1))^2+(cornerpoints(1,2)-cornerpoints(5,2))^2+(cornerpoints(1,3)-cornerpoints(5,3))^2))*100;
     
     mensurements = sort([ Mensurement1 Mensurement2 Mensurement3]);
+    
     height = mensurements(3);
-    width = mensurements(2);
-    depth = mensurements(1);
+    width  = mensurements(2);
+    depth  = mensurements(1);
+    
 end
 
 
