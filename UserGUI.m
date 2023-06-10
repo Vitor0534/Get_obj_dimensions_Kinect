@@ -23,7 +23,7 @@ function varargout = UserGUI(varargin)
 
 % Edit the above text to modify the response to help UserGUI
 
-% Last Modified by GUIDE v2.5 04-Jun-2023 16:22:56
+% Last Modified by GUIDE v2.5 10-Jun-2023 17:35:20
 
 % Begin initialization code - DO NOT EDIT
 gui_Singleton = 1;
@@ -212,6 +212,8 @@ luggageDimensionsMensured     = [
                                  results.Depth
                                  ]
 
+showDimentionsDifferece(handles, handLuggageDimentionLimits, checkedLuggageDimentionLimits, luggageDimensionsMensured)
+
 approbationMensage = getLuggageAprobationMensage(handLuggageDimentionLimits, checkedLuggageDimentionLimits, luggageDimensionsMensured);
 set(handles.luggageApprobation,'String',approbationMensage);
 
@@ -238,7 +240,15 @@ function [result] = validadeLuggageDimensions(LuggageDimentionLimits, luggageDim
     else
         result = false;
     end
+
+function showDimentionsDifferece(handles, handLuggageDimentionLimits, checkedLuggageDimentionLimits, luggageDimensionsMensured)
+    set(handles.heighDifferenceHL,'String',abs(handLuggageDimentionLimits(1) - luggageDimensionsMensured(1)));
+    set(handles.widthDifferenceHL,'String',abs(handLuggageDimentionLimits(2) - luggageDimensionsMensured(2)));
+    set(handles.depthDifferenceHL,'String',abs(handLuggageDimentionLimits(3) - luggageDimensionsMensured(3)));
     
+    set(handles.heighDifferenceCB,'String',abs(checkedLuggageDimentionLimits(1) - luggageDimensionsMensured(1)));
+    set(handles.widthDifferenceCB,'String',abs(checkedLuggageDimentionLimits(2) - luggageDimensionsMensured(2)));
+    set(handles.depthDifferenceCB,'String',abs(checkedLuggageDimentionLimits(3) - luggageDimensionsMensured(3)));
 
 function checkedBaggageLenghtLimit_Callback(hObject, eventdata, handles)
 % hObject    handle to checkedBaggageLenghtLimit (see GCBO)
@@ -497,3 +507,141 @@ function axes2_ButtonDownFcn(hObject, eventdata, handles)
 % hObject    handle to axes2 (see GCBO)
 % eventdata  reserved - to be defined in a future version of MATLAB
 % handles    structure with handles and user data (see GUIDATA)
+
+
+
+function heighDifferenceHL_Callback(hObject, eventdata, handles)
+% hObject    handle to heighDifferenceHL (see GCBO)
+% eventdata  reserved - to be defined in a future version of MATLAB
+% handles    structure with handles and user data (see GUIDATA)
+
+% Hints: get(hObject,'String') returns contents of heighDifferenceHL as text
+%        str2double(get(hObject,'String')) returns contents of heighDifferenceHL as a double
+
+
+% --- Executes during object creation, after setting all properties.
+function heighDifferenceHL_CreateFcn(hObject, eventdata, handles)
+% hObject    handle to heighDifferenceHL (see GCBO)
+% eventdata  reserved - to be defined in a future version of MATLAB
+% handles    empty - handles not created until after all CreateFcns called
+
+% Hint: edit controls usually have a white background on Windows.
+%       See ISPC and COMPUTER.
+if ispc && isequal(get(hObject,'BackgroundColor'), get(0,'defaultUicontrolBackgroundColor'))
+    set(hObject,'BackgroundColor','white');
+end
+
+
+
+function widthDifferenceHL_Callback(hObject, eventdata, handles)
+% hObject    handle to widthDifferenceHL (see GCBO)
+% eventdata  reserved - to be defined in a future version of MATLAB
+% handles    structure with handles and user data (see GUIDATA)
+
+% Hints: get(hObject,'String') returns contents of widthDifferenceHL as text
+%        str2double(get(hObject,'String')) returns contents of widthDifferenceHL as a double
+
+
+% --- Executes during object creation, after setting all properties.
+function widthDifferenceHL_CreateFcn(hObject, eventdata, handles)
+% hObject    handle to widthDifferenceHL (see GCBO)
+% eventdata  reserved - to be defined in a future version of MATLAB
+% handles    empty - handles not created until after all CreateFcns called
+
+% Hint: edit controls usually have a white background on Windows.
+%       See ISPC and COMPUTER.
+if ispc && isequal(get(hObject,'BackgroundColor'), get(0,'defaultUicontrolBackgroundColor'))
+    set(hObject,'BackgroundColor','white');
+end
+
+
+
+function depthDifferenceHL_Callback(hObject, eventdata, handles)
+% hObject    handle to depthDifferenceHL (see GCBO)
+% eventdata  reserved - to be defined in a future version of MATLAB
+% handles    structure with handles and user data (see GUIDATA)
+
+% Hints: get(hObject,'String') returns contents of depthDifferenceHL as text
+%        str2double(get(hObject,'String')) returns contents of depthDifferenceHL as a double
+
+
+% --- Executes during object creation, after setting all properties.
+function depthDifferenceHL_CreateFcn(hObject, eventdata, handles)
+% hObject    handle to depthDifferenceHL (see GCBO)
+% eventdata  reserved - to be defined in a future version of MATLAB
+% handles    empty - handles not created until after all CreateFcns called
+
+% Hint: edit controls usually have a white background on Windows.
+%       See ISPC and COMPUTER.
+if ispc && isequal(get(hObject,'BackgroundColor'), get(0,'defaultUicontrolBackgroundColor'))
+    set(hObject,'BackgroundColor','white');
+end
+
+
+
+function widthDifferenceCB_Callback(hObject, eventdata, handles)
+% hObject    handle to widthDifferenceCB (see GCBO)
+% eventdata  reserved - to be defined in a future version of MATLAB
+% handles    structure with handles and user data (see GUIDATA)
+
+% Hints: get(hObject,'String') returns contents of widthDifferenceCB as text
+%        str2double(get(hObject,'String')) returns contents of widthDifferenceCB as a double
+
+
+% --- Executes during object creation, after setting all properties.
+function widthDifferenceCB_CreateFcn(hObject, eventdata, handles)
+% hObject    handle to widthDifferenceCB (see GCBO)
+% eventdata  reserved - to be defined in a future version of MATLAB
+% handles    empty - handles not created until after all CreateFcns called
+
+% Hint: edit controls usually have a white background on Windows.
+%       See ISPC and COMPUTER.
+if ispc && isequal(get(hObject,'BackgroundColor'), get(0,'defaultUicontrolBackgroundColor'))
+    set(hObject,'BackgroundColor','white');
+end
+
+
+
+function depthDifferenceCB_Callback(hObject, eventdata, handles)
+% hObject    handle to depthDifferenceCB (see GCBO)
+% eventdata  reserved - to be defined in a future version of MATLAB
+% handles    structure with handles and user data (see GUIDATA)
+
+% Hints: get(hObject,'String') returns contents of depthDifferenceCB as text
+%        str2double(get(hObject,'String')) returns contents of depthDifferenceCB as a double
+
+
+% --- Executes during object creation, after setting all properties.
+function depthDifferenceCB_CreateFcn(hObject, eventdata, handles)
+% hObject    handle to depthDifferenceCB (see GCBO)
+% eventdata  reserved - to be defined in a future version of MATLAB
+% handles    empty - handles not created until after all CreateFcns called
+
+% Hint: edit controls usually have a white background on Windows.
+%       See ISPC and COMPUTER.
+if ispc && isequal(get(hObject,'BackgroundColor'), get(0,'defaultUicontrolBackgroundColor'))
+    set(hObject,'BackgroundColor','white');
+end
+
+
+
+function heighDifferenceCB_Callback(hObject, eventdata, handles)
+% hObject    handle to heighDifferenceCB (see GCBO)
+% eventdata  reserved - to be defined in a future version of MATLAB
+% handles    structure with handles and user data (see GUIDATA)
+
+% Hints: get(hObject,'String') returns contents of heighDifferenceCB as text
+%        str2double(get(hObject,'String')) returns contents of heighDifferenceCB as a double
+
+
+% --- Executes during object creation, after setting all properties.
+function heighDifferenceCB_CreateFcn(hObject, eventdata, handles)
+% hObject    handle to heighDifferenceCB (see GCBO)
+% eventdata  reserved - to be defined in a future version of MATLAB
+% handles    empty - handles not created until after all CreateFcns called
+
+% Hint: edit controls usually have a white background on Windows.
+%       See ISPC and COMPUTER.
+if ispc && isequal(get(hObject,'BackgroundColor'), get(0,'defaultUicontrolBackgroundColor'))
+    set(hObject,'BackgroundColor','white');
+end
