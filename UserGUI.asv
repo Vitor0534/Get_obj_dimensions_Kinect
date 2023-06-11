@@ -662,8 +662,7 @@ function speedPopupMenu_Callback(hObject, eventdata, handles)
 
 % Hints: contents = cellstr(get(hObject,'String')) returns speedPopupMenu contents as cell array
 %        contents{get(hObject,'Value')} returns selected item from speedPopupMenu
-
-value = get(hObject,'value') -1;
+value = str2double(get(hObject,'value')); 
 set(hObject,'UserData',value);
 
 
@@ -676,7 +675,6 @@ function speedPopupMenu_CreateFcn(hObject, eventdata, handles)
 % Hint: popupmenu controls usually have a white background on Windows.
 %       See ISPC and COMPUTER.
 set(hObject,'string',{'Set Speed', 1, 2, 3, 4, 5});
-set(hObject,'UserData',3);
 if ispc && isequal(get(hObject,'BackgroundColor'), get(0,'defaultUicontrolBackgroundColor'))
     set(hObject,'BackgroundColor','white');
     
