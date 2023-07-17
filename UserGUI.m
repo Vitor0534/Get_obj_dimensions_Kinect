@@ -191,7 +191,7 @@ lugaggeScanner.scannerParameters = scannerParameters;
 
 %3 - Show Results
 axes(handles.axes1)
-pcshow(results.pointCloudCapturadaTratada);
+pcshow(results.pointCloudCapturadaSemTratamento);
 
 axes(handles.axes2)
 lugaggeScanner.plotConvexHullOfPtCloud(results.pointCloudCapturadaTratada, results.convHull_K2_triangulation);

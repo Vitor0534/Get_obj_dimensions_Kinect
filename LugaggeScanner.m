@@ -226,9 +226,9 @@ function [results] = getLuggageDimensionsWithScannerAproach(luggageScannerObj)
     scannerParameters = luggageScannerObj.scannerParameters;
     
     scannerParameters.background_Distance           = 1.13;
-    scannerParameters.cut_value                     = 0.08;            %distância para segmentar a mala do fundo
+    scannerParameters.cut_value                     = 0.05;            %distância para segmentar a mala do fundo
     scannerParameters.step                          = 0.065;           %passo de amostragem
-    scannerParameters.sample_rate                   = 5;               %hz
+    scannerParameters.sample_rate                   = 25;               %hz
     scannerParameters.ROI                           = roi;             %[xmin xmax ymin ymax zmin zmax]
     scannerParameters.scanningMethod                = "Static";
     scannerParameters.objectDetectionPrecision      = 10;
@@ -697,33 +697,33 @@ function [results] = pc_Object_Dimension_scanner(depthDevice,colorDevice, scanne
         tempo_medida_OMBB3D = toc(inicio_tempo_medida_OMBB3D);
 
 
-        disp("As dimensões para cada método são [largura X altura X profundidade]]:");
-        
-        disp("mensurement_AABB:")
-        disp(" ")
-        volume_AABB = (Width_AABB*Hight_AABB*Depth_AABB)/100^3;
-        disp(Width_AABB + " X " + Hight_AABB + " X " + Depth_AABB + " | " + volume_AABB);
-        
-        disp(" ")
-        disp("mensurement_OMBB:")
-        disp(" ")
-        disp(widthMBB + " X " +  heightMBB + " X " + depthMBB + " | " + volume_MBB/100^3);
-        
-        disp(" ")
-        disp("mensurement_OMBB_3D:")
-        disp(" ")
-        disp(width_OMBB3D + " X " + height_OMBB3D + " X " + depth_OMBB3D + " | " + volume_OMBB3D);
-        disp(" ")
-        
-        tempo_de_flag = 6;
-        
-        disp("O tempo de amostragem foi: " + (tempo_amostragem-tempo_de_flag) + "s"); % a contagem de flag demora 6 segundos
-        disp("O tempo de tratamento da ptCloud foi: " + tempo_tratamento_ptCloud + "s");
-        disp("O tempo de medida com AABB foi: " + (tempo_medida_AABB + (tempo_amostragem-tempo_de_flag) + tempo_tratamento_ptCloud) + "s");
-        disp("O tempo de medida com OMBB foi: " + (tempo_medida_OMBB + (tempo_amostragem-tempo_de_flag) + tempo_tratamento_ptCloud)+ "s");
-        disp("O tempo de medida com OMBB 3D foi: " + (tempo_medida_OMBB3D + (tempo_amostragem-tempo_de_flag) + tempo_tratamento_ptCloud) + "s");
-        disp("A quantidade de amostras foi: " + number_of_Obj_samples);
-        
+%         disp("As dimensões para cada método são [largura X altura X profundidade]]:");
+%         
+%         disp("mensurement_AABB:")
+%         disp(" ")
+%         volume_AABB = (Width_AABB*Hight_AABB*Depth_AABB)/100^3;
+%         disp(Width_AABB + " X " + Hight_AABB + " X " + Depth_AABB + " | " + volume_AABB);
+%         
+%         disp(" ")
+%         disp("mensurement_OMBB:")
+%         disp(" ")
+%         disp(widthMBB + " X " +  heightMBB + " X " + depthMBB + " | " + volume_MBB/100^3);
+%         
+%         disp(" ")
+%         disp("mensurement_OMBB_3D:")
+%         disp(" ")
+%         disp(width_OMBB3D + " X " + height_OMBB3D + " X " + depth_OMBB3D + " | " + volume_OMBB3D);
+%         disp(" ")
+%         
+%         tempo_de_flag = 6;
+%         
+%         disp("O tempo de amostragem foi: " + (tempo_amostragem-tempo_de_flag) + "s"); % a contagem de flag demora 6 segundos
+%         disp("O tempo de tratamento da ptCloud foi: " + tempo_tratamento_ptCloud + "s");
+%         disp("O tempo de medida com AABB foi: " + (tempo_medida_AABB + (tempo_amostragem-tempo_de_flag) + tempo_tratamento_ptCloud) + "s");
+%         disp("O tempo de medida com OMBB foi: " + (tempo_medida_OMBB + (tempo_amostragem-tempo_de_flag) + tempo_tratamento_ptCloud)+ "s");
+%         disp("O tempo de medida com OMBB 3D foi: " + (tempo_medida_OMBB3D + (tempo_amostragem-tempo_de_flag) + tempo_tratamento_ptCloud) + "s");
+%         disp("A quantidade de amostras foi: " + number_of_Obj_samples);
+%         
         results = Results;
         
         results.Height                            = heightMBB;
