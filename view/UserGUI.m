@@ -23,7 +23,7 @@ function varargout = UserGUI(varargin)
 
 % Edit the above text to modify the response to help UserGUI
 
-% Last Modified by GUIDE v2.5 11-Jun-2023 15:06:23
+% Last Modified by GUIDE v2.5 17-Jul-2023 11:33:35
 
 % Begin initialization code - DO NOT EDIT
 gui_Singleton = 1;
@@ -663,6 +663,8 @@ function speedPopupMenu_Callback(hObject, eventdata, handles)
 % Hints: contents = cellstr(get(hObject,'String')) returns speedPopupMenu contents as cell array
 %        contents{get(hObject,'Value')} returns selected item from speedPopupMenu
 
+f = waitbar(0,'Please wait...');
+
 value = get(hObject,'value') -1;
 set(hObject,'UserData',value);
 
@@ -681,3 +683,10 @@ if ispc && isequal(get(hObject,'BackgroundColor'), get(0,'defaultUicontrolBackgr
     set(hObject,'BackgroundColor','white');
     
 end
+
+
+% --- Executes on button press in pushbutton2.
+function pushbutton2_Callback(hObject, eventdata, handles)
+% hObject    handle to pushbutton2 (see GCBO)
+% eventdata  reserved - to be defined in a future version of MATLAB
+% handles    structure with handles and user data (see GUIDATA)

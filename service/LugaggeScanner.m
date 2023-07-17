@@ -2,6 +2,14 @@
 %       1 - image aquisition toolbox;
 %       2 - kinect for matlab package;
 
+% Executando o software:
+%       1 - o ponto de entrada é o arquivo UserGui.m que é uma view
+%       2 - antes de executá-lo sertifique-se de adicionar todas as pastas
+%       do diretorio raiz ao search path do matlab:
+%             a. Basta abrir o diretório com o mátlab, selecionar a pasta
+%             na arvore de diretórios, clicar com o botão direito e
+%             adicionar tudo, inclusive as subpastas
+
 %Dependendo do método utilizado para medida, os dois seguintes packages devem ser
 %adicionados
 %       3 - Minimal Bounding Box    (https://www.mathworks.com/matlabcentral/fileexchange/18264-minimal-bounding-box)
