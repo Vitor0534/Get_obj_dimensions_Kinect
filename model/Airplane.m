@@ -8,12 +8,12 @@ classdef Airplane
     %   Bulk_basement_Capacity     = capacidade do Bulk (KG)
     
     properties
-        Model                        = "A320"
+        model                        = "A320"
         passenger_Capacity           = 150
         hand_Luggage_Capacity        = 2600
-        Forward_basement_Capacity    = 3402
-        Backward_basement_Capacity   = 4536
-        Bulk_basement_Capacity       = 1497
+        forward_basement_Capacity    = 3402
+        backward_basement_Capacity   = 4536
+        bulk_basement_Capacity       = 1497
         
     end
     

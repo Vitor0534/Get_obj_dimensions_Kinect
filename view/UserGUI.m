@@ -663,8 +663,6 @@ function speedPopupMenu_Callback(hObject, eventdata, handles)
 % Hints: contents = cellstr(get(hObject,'String')) returns speedPopupMenu contents as cell array
 %        contents{get(hObject,'Value')} returns selected item from speedPopupMenu
 
-f = waitbar(0,'Please wait...');
-
 value = get(hObject,'value') -1;
 set(hObject,'UserData',value);
 

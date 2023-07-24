@@ -11,6 +11,9 @@ A principal função é realizar medidas de bagagens aeroportuárias. Para tanto
 
 ## Informações importantes
 
+- Tecnologias utilizadas no desenvolvimento:
+    - Matlab 2020
+
 - Para executar esse programa, é necessário instalar as dependências:
 	- image aquisition toolbox;
 	- kinect for matlab package;
