@@ -19,13 +19,12 @@ classdef Airplane
     
     methods
         function airplaneNew = Airplane(Model,passenger_Capacity, hand_Luggage_Capacity, Forward_basement_Capacity, Backward_basement_Capacity, Bulk_basement_Capacity)
-            airplaneNew = Airplane;
-            airplaneNew.model                      = Model;
+            airplaneNew.Model                      = Model;
             airplaneNew.passenger_Capacity         = passenger_Capacity;
             airplaneNew.hand_Luggage_Capacity      = hand_Luggage_Capacity;
-            airplaneNew.forward_basement_Capacity  = Forward_basement_Capacity;
-            airplaneNew.backward_basement_Capacity = Backward_basement_Capacity;
-            airplaneNew.bulk_basement_Capacity     = Bulk_basement_Capacity;
+            airplaneNew.Forward_basement_Capacity  = Forward_basement_Capacity;
+            airplaneNew.Backward_basement_Capacity = Backward_basement_Capacity;
+            airplaneNew.Bulk_basement_Capacity     = Bulk_basement_Capacity;
         end 
     end
 end
