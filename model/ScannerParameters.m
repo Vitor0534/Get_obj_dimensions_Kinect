@@ -18,7 +18,7 @@ classdef ScannerParameters
         scanningMethod 
         mensureMethod            = 'MBB';
         objectDetectionPrecision = 10;
-        arduinoController      
+        arduinoService      
         matSpeed                 = 3;
         
     end

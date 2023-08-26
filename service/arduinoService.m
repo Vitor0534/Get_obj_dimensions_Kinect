@@ -1,7 +1,7 @@
 %Este arquivo contem os códigos referentes ao controle da esteira via
 %Arduino. Os comandos são mandados pela porta Serial do Arduino
 
-classdef arduinoService
+classdef ArduinoService
     properties
         PORT = '';
         SerialObject = '';

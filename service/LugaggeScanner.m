@@ -42,12 +42,6 @@ classdef LugaggeScanner
 end
 
 
-
-
-%Paso 0: chamada de funções
-% getLuggageDimensionsWithScannerAproach();
-
-
 %TestAllMesureMethods();
 %testingROIVideoInput();
 
@@ -174,15 +168,15 @@ function [results] = getLuggageDimensionsWithScannerAproach(luggageScannerObj)
         depthDevice = imaq.VideoDevice('kinect',2);
     %************************************************************
     
-    %PT3: inicializa a camera:
+    %PT3: inicializa o sensor kinect:
         colorDevice();
         depthDevice();
     %********************************
     
     %PT3.5:configurando arduino
-         arduinoObj = arduinoService;
+         arduinoObj = ArduinoService;
          arduinoObj = arduinoObj.constructor('COM3',9600, arduinoObj);
-         arduinoObj =  arduinoObj.setup('connect',arduinoObj);
+         arduinoObj = arduinoObj.setup('connect',arduinoObj);
     %*********************************
 
    
@@ -240,7 +234,7 @@ function [results] = getLuggageDimensionsWithScannerAproach(luggageScannerObj)
     scannerParameters.ROI                           = roi;             %[xmin xmax ymin ymax zmin zmax]
     scannerParameters.scanningMethod                = "Static";
     scannerParameters.objectDetectionPrecision      = 10;
-    scannerParameters.arduinoController             = arduinoObj;
+    scannerParameters.arduinoService                = arduinoObj;
 
 %     background_Distance = 1.1;
 %     cut_value = 0.05;            %distância para segmentar a mala do fundo
@@ -581,7 +575,7 @@ function [results] = pc_Object_Dimension_scanner(depthDevice,colorDevice, scanne
     method                   = scannerParameters.scanningMethod;
     roi_Slice                = scannerParameters.ROI;
     objectDetectionPrecision = scannerParameters.objectDetectionPrecision;
-    arduinoObj               = scannerParameters.arduinoController;
+    arduinoObj               = scannerParameters.arduinoService;
 
     width=[0,0];                                     %x
     height=[0,0];                                    %y
