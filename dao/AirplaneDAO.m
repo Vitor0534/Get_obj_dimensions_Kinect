@@ -3,21 +3,33 @@ classdef AirplaneDAO
     %   Detailed explanation goes here
     
     properties
-        airplaneFileName   = '../dataSet/Airplane.csv';
+        airplaneFileName   = 'Airplane.csv';
     end
     
-    methods
-        function airplaneDAO = AirplaneDAO(airplaneFileName)
-            %AIRPLANEDAO Construct an instance of this class
-            %   Detailed explanation goes here
+    methods(Static)
+        
+        function airplaneDAONew = constructor(airplaneDAO, airplaneFileName)
+            
             airplaneDAO.airplaneFileName = airplaneFileName;
+            
+            airplaneDAONew = airplaneDAO;
+            
         end
         
-        function result = create(airplaneDAO, airplane)
+        function create(airplaneDAO, airplane)
             
             airplaneList = read(airplaneDAO);
             
-            airplaneList = [airplaneList;{airplane.model, airplane.passenger_Capacity, airplane.hand_Luggage_Capacity, %adicione o resto dos parametros 
+            airplaneList = [airplaneList;
+                            {
+                             airplane.model,                     ...
+                             airplane.passenger_Capacity,        ...
+                             airplane.hand_Luggage_Capacity,     ...
+                             airplane.forward_basement_Capacity, ...
+                             airplane.backward_basement_Capacity,...
+                             airplane.bulk_basement_Capacity
+                             }
+                            ];
             
             writetable(airplaneList,airplaneDAO.airplaneFileName);
             

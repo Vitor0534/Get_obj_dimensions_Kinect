@@ -17,9 +17,9 @@ classdef Airplane
         
     end
     
-    methods
-        function airplaneNew = Airplane(Model,passenger_Capacity, hand_Luggage_Capacity, Forward_basement_Capacity, Backward_basement_Capacity, Bulk_basement_Capacity)
-            airplaneNew = Airplane;
+    methods(Static)
+        function airplaneNew = constructor(Model,passenger_Capacity, hand_Luggage_Capacity, Forward_basement_Capacity, Backward_basement_Capacity, Bulk_basement_Capacity)
+            airplaneNew                            = Airplane;
             airplaneNew.model                      = Model;
             airplaneNew.passenger_Capacity         = passenger_Capacity;
             airplaneNew.hand_Luggage_Capacity      = hand_Luggage_Capacity;
