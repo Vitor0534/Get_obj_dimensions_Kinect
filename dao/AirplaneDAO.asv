@@ -1,0 +1,60 @@
+classdef AirplaneDAO
+    %AIRPLANEDAO Summary of this class goes here
+    %   Detailed explanation goes here
+    
+    properties
+        airplaneFileName   = 'Airplane.csv';
+    end
+    
+    methods(Static)
+        
+        function airplaneDAONew = constructor(airplaneDAO, airplaneFileName)
+            
+            airplaneDAO.airplaneFileName = airplaneFileName;
+            
+            airplaneDAONew = airplaneDAO;
+            
+        end
+        
+        function create(airplaneDAO, airplane)
+            
+            airplaneTable = read(airplaneDAO);
+            
+            airplaneTable = [airplaneTable;
+                            {
+                             airplane.model,                     ...
+                             airplane.passenger_Capacity,        ...
+                             airplane.hand_Luggage_Capacity,     ...
+                             airplane.forward_basement_Capacity, ...
+                             airplane.backward_basement_Capacity,...
+                             airplane.bulk_basement_Capacity
+                             }
+                            ];
+            
+            writetable(airplaneTable,airplaneDAO.airplaneFileName);
+            
+        end
+     
+        function airplaneTable = read(airplaneDAO)
+            
+            airplaneTable = readtable(airplaneDAO.airplaneFileName);
+            
+        end
+        
+        function delete(airplaneDAO, airplane)
+            
+            airplaneTable = read(airplaneDAO);
+            airplaneTable.Properties.RowNames = airplaneTable.Model;
+            airplaneTable(airplane.model,:) = [];
+            
+        end
+        
+        function outputArg = update(airplane)
+            
+            %todo
+            
+        end
+        
+    end
+end
+
