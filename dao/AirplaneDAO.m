@@ -17,6 +17,12 @@ classdef AirplaneDAO
         end
        
         
+        function saveAll(airplaneDAO, airplaneTable)
+            
+            writetable(airplaneTable, airplaneDAO.airplaneFileName);
+            
+        end
+        
         function create(airplaneDAO, airplaneOBJ)
             
             airplaneTable = table(                                    ...
@@ -102,7 +108,15 @@ classdef AirplaneDAO
         
         
         function selectAnAirplane(airplaneDAO, airplaneOBJ)
-            %todo
+            
+            airplaneTable = airplaneDAO.read(airplaneDAO);
+            
+            airplaneTable.Is_Selected(:) = 0;
+            
+            airplaneDAO.saveAll(airplaneDAO, airplaneTable)
+            
+            airplaneDAO.update(airplaneDAO, airplaneOBJ.model, airplaneOBJ);
+            
         end
         
         
