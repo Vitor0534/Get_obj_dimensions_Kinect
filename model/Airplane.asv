@@ -6,7 +6,7 @@ classdef Airplane
     %   Forward_basement_Capacity  = capacidade da parte da frente do porão (KG)
     %   Backward_basement_Capacity = capacidade da parte de trás do porão (KG)
     %   Bulk_basement_Capacity     = capacidade do Bulk (KG)
-    %   is_Selected                = indica se a aeronave está selecionada como parametro de carregamento no menu principal
+    %   is_Selected         
     
     properties
         model                        = "A320";
@@ -20,7 +20,7 @@ classdef Airplane
     end
     
     methods(Static)
-        function airplaneNew = constructor(Model,passenger_Capacity, hand_Luggage_Capacity, Forward_basement_Capacity, Backward_basement_Capacity, Bulk_basement_Capacity, is_Selected)
+        function airplaneNew = constructor(Model,passenger_Capacity, hand_Luggage_Capacity, Forward_basement_Capacity, Backward_basement_Capacity, Bulk_basement_Capacity)
             airplaneNew                            = Airplane;
             airplaneNew.model                      = Model;
             airplaneNew.passenger_Capacity         = passenger_Capacity;
@@ -28,7 +28,6 @@ classdef Airplane
             airplaneNew.forward_basement_Capacity  = Forward_basement_Capacity;
             airplaneNew.backward_basement_Capacity = Backward_basement_Capacity;
             airplaneNew.bulk_basement_Capacity     = Bulk_basement_Capacity;
-            airplaneNew.is_Selected                = is_Selected;
         end 
     end
 end

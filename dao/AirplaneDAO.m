@@ -25,8 +25,9 @@ classdef AirplaneDAO
                              {airplaneOBJ.hand_Luggage_Capacity},     ...
                              {airplaneOBJ.forward_basement_Capacity}, ...
                              {airplaneOBJ.backward_basement_Capacity},...
-                             {airplaneOBJ.bulk_basement_Capacity}     ...
-                            );
+                             {airplaneOBJ.bulk_basement_Capacity},    ...
+                             {airplaneOBJ.is_Selected}                ...
+                             );
             
             writetable(airplaneTable, airplaneDAO.airplaneFileName, ...
                        'WriteMode','Append',                        ...
@@ -61,6 +62,50 @@ classdef AirplaneDAO
             airplaneDAO.create(airplaneDAO, airplaneOBJ)
             
         end
+        
+        function airplaneSelectedOBJ = getSelectedAirplane(airplaneDAO)
+            
+            try
+                
+                airplaneTable = airplaneDAO.read(airplaneDAO);
+
+                airplaneSelectedTable = 0;
+
+                for i=1:size(airplaneTable,1)
+
+                    if(airplaneTable(i,:).Is_Selected == 1)
+                        airplaneSelectedTable = airplaneTable(i,:);
+                    end
+
+                end
+
+                if(~istable(airplaneSelectedTable))
+                    airplaneSelectedOBJ = 0;
+                    return
+                end
+                
+                
+                airplaneSelectedOBJ = Airplane;
+                airplaneSelectedOBJ = airplaneSelectedOBJ.constructor(  ...
+                                                                        airplaneSelectedTable(1,1).Model,                     ...
+                                                                        airplaneSelectedTable(1,2).Passenger_Capacity,        ...
+                                                                        airplaneSelectedTable(1,3).Hand_Luggage_Capacity,     ...
+                                                                        airplaneSelectedTable(1,4).Forward_basement_Capacity, ...
+                                                                        airplaneSelectedTable(1,5).Backward_basement_Capacity,...
+                                                                        airplaneSelectedTable(1,6).Bulk_basement_Capacity,    ...
+                                                                        airplaneSelectedTable(1,7).Is_Selected                ...
+                                                                     );
+            catch exception
+                throw(exception) 
+            end
+        end
+        
+        
+        function selectAnAirplane(airplaneDAO, airplaneOBJ)
+            %todo
+        end
+        
+        
         
     end
 end
