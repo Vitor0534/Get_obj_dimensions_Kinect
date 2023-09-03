@@ -73,6 +73,13 @@ classdef AirplaneService
             
         end
         
+        function airplaneSelectedOBJ = getSelectedAirplane(airplaneService)
+            airplaneSelectedOBJ = airplaneService.airplaneDAO.getSelectedAirplane(airplaneService.airplaneDAO);
+        end
+        
+        function selectAnAirplane(airplaneService, airplaneOBJ)
+            airplaneService.airplaneDAO.selectAnAirplane(airplaneService.airplaneDAO,airplaneOBJ);
+        end
         
     end
     
