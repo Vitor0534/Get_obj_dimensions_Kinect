@@ -214,8 +214,8 @@ airplaneService.handLuggageMaxWeight             = 10;
 airplaneService.despachedLuggageMaxWeight        = 23;
 
 
-maxVolumeHandLuggage      = airplaneService.get_Max_Volume_Hand_Luggage(airplaneService, prod(handLuggageDimentionLimits), airplaneService.handLuggageMaxWeight);
-maxVolumeDespachedLuggage = airplaneService.get_Max_Volume_despached_Luggage(airplaneService, prod(checkedLuggageDimentionLimits), airplaneService.despachedLuggageMaxWeight);
+maxVolumeHandLuggage      = airplaneService.get_Max_Volume_Hand_Luggage(airplaneService, prod(handLuggageDimentionLimits), handLuggageMaxWeight);
+maxVolumeDespachedLuggage = airplaneService.get_Max_Volume_despached_Luggage(airplaneService, prod(checkedLuggageDimentionLimits), despachedLuggageMaxWeight);
 
 set(handles.volumeRestanteBagageiroText, 'String',    maxVolumeHandLuggage);
 set(handles.volumeRestantePoraoText,     'String',    maxVolumeDespachedLuggage);
@@ -252,9 +252,10 @@ showDimentionsDifferece(handles, handLuggageDimentionLimits, checkedLuggageDimen
 countAprovedLuggages(handles,aprovation);
 
 if(luggageType == 1)
-    updateCurrentStatusOfBaggageStorage(handles.volumeRestanteBagageiroText, handles.porcentagemPreenchidaBagageirotext, maxVolumeHandLuggage, luggageDimensionsMensured, luggageAprovation);
-elseif(luggageType == 2)
-    updateCurrentStatusOfBaggageStorage(handles.volumeRestantePoraoText, handles.porcentagemPreenchidaPoraotext, maxVolumeDespachedLuggage, luggageDimensionsMensured, luggageAprovation);
+    updateCurrentStatusOfBaggageStorage(handles.volumeRestanteBagageiroText, handles.porcentagemPreenchidaBagageirotext, maxVolumeBaggageStorage, luggageDimensionsMensured, luggageAprovation)
+    updateCurrentStatusOfBaggageStorage(handles.volumeRestanteBagageiroText, luggageDimensionsMensured, luggageAprovation);
+else
+    updateCurrentStatusOfBaggageStorage(handles.volumeRestantePoraoText, luggageDimensionsMensured, luggageAprovation);
 end
     
  

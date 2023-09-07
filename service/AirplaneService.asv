@@ -12,10 +12,6 @@ classdef AirplaneService
     properties
         airplane
         airplaneDAO
-        handLuggageMaxDimentionLimits    = [55 25 35];
-        checkedLuggageMaxDimentionLimits = [55 80 28];
-        handLuggageMaxWeight             = 10;
-        despachedLuggageMaxWeight        = 23;
     end
     
     methods
@@ -35,9 +31,9 @@ classdef AirplaneService
        
         end
         
-        function result = get_Max_Number_despached_Luggage(airplaneService, kgMaxPerLuggage)
+        function result = get_Max_Number_despached_Luggage(airplaneService,kgMaxPerLuggage)
             
-            result = (airplaneService.airplane.forward_basement_Capacity + airplaneService.airplane.backward_basement_Capacity)/kgMaxPerLuggage;
+            result = (airplaneService.airplane.Forward_basement_Capacity + airplaneService.airplane.Backward_basement_Capacity)/kgMaxPerLuggage;
         
         end
         
@@ -47,9 +43,9 @@ classdef AirplaneService
         
         end
         
-        function result = get_Max_Volume_despached_Luggage(airplaneService,volumeMaxPerLuggage, kgMaxPerLuggage)
+        function result = get_Max_Volume_despached_Luggage(airplaneService,volumeMaxPerLuggage)
             
-            result = airplaneService.get_Max_Number_despached_Luggage(airplaneService, kgMaxPerLuggage) * volumeMaxPerLuggage;
+            result = airplaneService.get_Max_Number_despached_Luggag * volumeMaxPerLuggage;
             
         end
         
