@@ -18,9 +18,12 @@ classdef ScannerParameters
         scanningMethod 
         mensureMethod            = 'MBB';
         objectDetectionPrecision = 10;
-        arduinoService      
-        matSpeed                 = 3;
         
+        arduinoService
+        
+        matSpeed                 = 3;
+        matDirection             = 'clockwise';
+        matPwmControlReason      = 15;
     end
     
     methods(Static)

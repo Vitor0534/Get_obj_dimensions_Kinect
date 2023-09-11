@@ -235,7 +235,11 @@ function [results] = getLuggageDimensionsWithScannerAproach(luggageScannerObj)
     scannerParameters.scanningMethod                = "Static";
     scannerParameters.objectDetectionPrecision      = 10;
     scannerParameters.arduinoService                = arduinoObj;
-
+    
+    scannerParameters.arduinoService.setMatSpeedByPreSelectedOption(scannerParameters.arduinoService, scannerParameters.matSpeed);
+    scannerParameters.arduinoService.arduinoMatControl(scannerParameters.arduinoService, scannerParameters.matDirection);
+    scannerParameters.arduinoService.arduinoMatControl(scannerParameters.arduinoService, 'set_pwmControlReason', scannerParameters.matPwmControlReason);
+    
 %     background_Distance = 1.1;
 %     cut_value = 0.05;            %distância para segmentar a mala do fundo
 %     step = 0.065;                %passo de amostragem
@@ -291,7 +295,7 @@ function [results] = getLuggageDimensionsWithScannerAproach(luggageScannerObj)
         
         
     catch error
-        disp("Erro na função: GetLuggageDimensionsWithScannerAproach");
+        disp("Erro na função: getLuggageDimensionsWithScannerAproach");
         disp(error);
         delete(colorDevice);
         delete(depthDevice);
@@ -575,7 +579,7 @@ function [results] = pc_Object_Dimension_scanner(depthDevice,colorDevice, scanne
     method                   = scannerParameters.scanningMethod;
     roi_Slice                = scannerParameters.ROI;
     objectDetectionPrecision = scannerParameters.objectDetectionPrecision;
-    arduinoObj               = scannerParameters.arduinoService;
+    arduinoService               = scannerParameters.arduinoService;
 
     width=[0,0];                                     %x
     height=[0,0];                                    %y
@@ -593,16 +597,16 @@ function [results] = pc_Object_Dimension_scanner(depthDevice,colorDevice, scanne
     ptCloud_of_the_object_interated = NaN(size(xyzPoints,1)*30,size(xyzPoints,2));
     
     number_of_Obj_samples = 0;
-    startTimeSample       = 0;
+    startTimeSample       = tic;
     
     try
         
         disp("Iniciando Medida da Bagagem...");
         
         
-        arduinoObj.arduinoMatControl('run',arduinoObj);
+        arduinoService.arduinoMatControl(arduinoService, 'run');
         
-        samplePosition = 1;
+        samplePosition  = 1;
         while(break_flag<=10)
 
             %coletando frames da matriz de pontos
@@ -644,7 +648,7 @@ function [results] = pc_Object_Dimension_scanner(depthDevice,colorDevice, scanne
         tempo_amostragem = toc(startTimeSample);
         
         
-        arduinoObj.arduinoMatControl('stop',arduinoObj);
+        arduinoService.arduinoMatControl(arduinoService, 'stop');
         
         
         ptCloud_of_the_object_interated = ptCloud_of_the_object_interated(~isnan(ptCloud_of_the_object_interated(:,1)),~isnan(ptCloud_of_the_object_interated(1,:)));

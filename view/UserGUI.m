@@ -23,7 +23,7 @@ function varargout = UserGUI(varargin)
 
 % Edit the above text to modify the response to help UserGUI
 
-% Last Modified by GUIDE v2.5 07-Sep-2023 17:00:48
+% Last Modified by GUIDE v2.5 07-Sep-2023 18:18:27
 
 % Begin initialization code - DO NOT EDIT
 gui_Singleton = 1;
@@ -217,10 +217,10 @@ airplaneService.despachedLuggageMaxWeight        = 23;
 maxVolumeHandLuggage      = airplaneService.get_Max_Volume_Hand_Luggage(airplaneService, prod(handLuggageDimentionLimits), airplaneService.handLuggageMaxWeight);
 maxVolumeDespachedLuggage = airplaneService.get_Max_Volume_despached_Luggage(airplaneService, prod(checkedLuggageDimentionLimits), airplaneService.despachedLuggageMaxWeight);
 
-set(handles.volumeRestanteBagageiroText, 'String',    maxVolumeHandLuggage);
-set(handles.volumeRestantePoraoText,     'String',    maxVolumeDespachedLuggage);
-set(handles.volumeRestanteBagageiroText, 'UserData',  maxVolumeHandLuggage);
-set(handles.volumeRestantePoraoText,     'UserData',  maxVolumeDespachedLuggage);
+set(handles.volumeRestanteBagageiroText, 'String',    cm3ToM3(maxVolumeHandLuggage));
+set(handles.volumeRestantePoraoText,     'String',    cm3ToM3(maxVolumeDespachedLuggage));
+set(handles.volumeRestanteBagageiroText, 'UserData',  cm3ToM3(maxVolumeHandLuggage));
+set(handles.volumeRestantePoraoText,     'UserData',  cm3ToM3(maxVolumeDespachedLuggage));
 
 
 %2 - execute scanner
@@ -247,9 +247,9 @@ luggageDimensionsMensured     = [
 
 showDimentionsDifferece(handles, handLuggageDimentionLimits, checkedLuggageDimentionLimits, luggageDimensionsMensured)
 
-[approbationMensage,aprovation, luggageType] = getLuggageAprobationMensage(handLuggageDimentionLimits, checkedLuggageDimentionLimits, luggageDimensionsMensured);
+[approbationMensage,luggageAprovation, luggageType] = getLuggageAprobationMensage(handLuggageDimentionLimits, checkedLuggageDimentionLimits, luggageDimensionsMensured);
  
-countAprovedLuggages(handles,aprovation);
+countAprovedLuggages(handles,luggageAprovation);
 
 if(luggageType == 1)
     updateCurrentStatusOfBaggageStorage(handles.volumeRestanteBagageiroText, handles.porcentagemPreenchidaBagageirotext, maxVolumeHandLuggage, luggageDimensionsMensured, luggageAprovation);
@@ -310,18 +310,22 @@ function countAprovedLuggages(handles,aprovation)
 function updateCurrentStatusOfBaggageStorage(airplaneVolumeStorageTextHObject, airplanePercentageStorageTextHObject, maxVolumeBaggageStorage, luggageDimensionsMensured, luggageAprovation)
 
     if(luggageAprovation)
-        volumeDisponivelBagagem = get(airplaneVolumeStorageTextHObject,'UserData') - prod(luggageDimensionsMensured);
+        volumeDisponivelBagagem = get(airplaneVolumeStorageTextHObject,'UserData') - cm3ToM3(prod(luggageDimensionsMensured));
         
         set(airplaneVolumeStorageTextHObject, 'String',     volumeDisponivelBagagem);
         set(airplaneVolumeStorageTextHObject, 'UserData',   volumeDisponivelBagagem);
         
-        currentStoragePercentage = 100 * volumeDisponivelBagagem / maxVolumeBaggageStorage;
+        currentStoragePercentage = (100 * volumeDisponivelBagagem / cm3ToM3(maxVolumeBaggageStorage)) - 100;
         
-        set(airplanePercentageStorageTextHObject, 'String', currentStoragePercentage);
+        set(airplanePercentageStorageTextHObject, 'String', abs(currentStoragePercentage));
        
       
     end
-    
+
+function result = cm3ToM3(value)
+    result = value/1000000;
+
+        
 function checkedBaggageLenghtLimit_Callback(hObject, eventdata, handles)
 % hObject    handle to checkedBaggageLenghtLimit (see GCBO)
 % eventdata  reserved - to be defined in a future version of MATLAB
@@ -797,3 +801,10 @@ function qtdBagagenstext_DeleteFcn(hObject, eventdata, handles)
 % hObject    handle to qtdBagagenstext (see GCBO)
 % eventdata  reserved - to be defined in a future version of MATLAB
 % handles    structure with handles and user data (see GUIDATA)
+
+
+% --- Executes during object creation, after setting all properties.
+function porcentagemPreenchidaBagageirotext_CreateFcn(hObject, eventdata, handles)
+% hObject    handle to porcentagemPreenchidaBagageirotext (see GCBO)
+% eventdata  reserved - to be defined in a future version of MATLAB
+% handles    empty - handles not created until after all CreateFcns called
