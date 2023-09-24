@@ -2,6 +2,14 @@
 %       1 - image aquisition toolbox;
 %       2 - kinect for matlab package;
 
+% Executando o software:
+%       1 - o ponto de entrada é o arquivo UserGui.m que é uma view
+%       2 - antes de executá-lo sertifique-se de adicionar todas as pastas
+%       do diretorio raiz ao search path do matlab:
+%             a. Basta abrir o diretório com o mátlab, selecionar a pasta
+%             na arvore de diretórios, clicar com o botão direito e
+%             adicionar tudo, inclusive as subpastas
+
 %Dependendo do método utilizado para medida, os dois seguintes packages devem ser
 %adicionados
 %       3 - Minimal Bounding Box    (https://www.mathworks.com/matlabcentral/fileexchange/18264-minimal-bounding-box)
@@ -9,8 +17,29 @@
 
 
 
-%Paso 0: chamada de funções
-getLuggageDimensionsWithScannerAproach();
+classdef LugaggeScanner
+    properties  
+        scannerParameters = ScannerParameters();
+        scannerResults    = Results();
+            
+        
+    end
+    
+    methods(Static)
+        
+        %Paso 0: chamada de funções
+        function [result] = getLuggageDimensionsWithScannerAproach(luggageScannerObj)
+            luggageScannerObj.scannerResults = getLuggageDimensionsWithScannerAproach(luggageScannerObj);
+            result = luggageScannerObj.scannerResults;
+        end
+        
+        function plotConvexHullOfPtCloud(pointCloud, convHull_K2_triangulation)
+                [x,y,z] = format_Data(pointCloud);
+                show_convexhull(convHull_K2_triangulation,x,y,z,'FaceColor','cyan'); 
+        end
+        
+    end
+end
 
 
 %TestAllMesureMethods();
@@ -120,7 +149,7 @@ function [height,width,depth] = test_OMBB_3D()
 end
 
 
-function getLuggageDimensionsWithScannerAproach()
+function [results] = getLuggageDimensionsWithScannerAproach(luggageScannerObj)
 
    try
        
@@ -139,15 +168,15 @@ function getLuggageDimensionsWithScannerAproach()
         depthDevice = imaq.VideoDevice('kinect',2);
     %************************************************************
     
-    %PT3: inicializa a camera:
+    %PT3: inicializa o sensor kinect:
         colorDevice();
         depthDevice();
     %********************************
     
     %PT3.5:configurando arduino
-         arduinoObj = arduinoService;
+         arduinoObj = ArduinoService;
          arduinoObj = arduinoObj.constructor('COM3',9600, arduinoObj);
-         arduinoObj =  arduinoObj.setup('connect',arduinoObj);
+         arduinoObj = arduinoObj.setup('connect',arduinoObj);
     %*********************************
 
    
@@ -196,17 +225,21 @@ function getLuggageDimensionsWithScannerAproach()
     %roi = [-0.335, 0.265, -0.035, 0.025, 0, inf]   %--> teste para limitar scanneamento (slice - com esteira) comprimento = 0.06, largura = 0,70
 
     
-    scannerParameters = ScannerParameters();
+    scannerParameters = luggageScannerObj.scannerParameters;
     
     scannerParameters.background_Distance           = 1.13;
-    scannerParameters.cut_value                     = 0.08;            %distância para segmentar a mala do fundo
+    scannerParameters.cut_value                     = 0.05;            %distância para segmentar a mala do fundo
     scannerParameters.step                          = 0.065;           %passo de amostragem
-    scannerParameters.sample_rate                   = 5;               %hz
+    scannerParameters.sample_rate                   = 25;               %hz
     scannerParameters.ROI                           = roi;             %[xmin xmax ymin ymax zmin zmax]
     scannerParameters.scanningMethod                = "Static";
     scannerParameters.objectDetectionPrecision      = 10;
-    scannerParameters.arduinoController             = arduinoObj;
-
+    scannerParameters.arduinoService                = arduinoObj;
+    
+    scannerParameters.arduinoService.setMatSpeedByPreSelectedOption(scannerParameters.arduinoService, scannerParameters.matSpeed);
+    scannerParameters.arduinoService.arduinoMatControl(scannerParameters.arduinoService, scannerParameters.matDirection);
+    scannerParameters.arduinoService.arduinoMatControl(scannerParameters.arduinoService, 'set_pwmControlReason', scannerParameters.matPwmControlReason);
+    
 %     background_Distance = 1.1;
 %     cut_value = 0.05;            %distância para segmentar a mala do fundo
 %     step = 0.065;                %passo de amostragem
@@ -236,26 +269,15 @@ function getLuggageDimensionsWithScannerAproach()
      [results] = pc_Object_Dimension_scanner(depthDevice,colorDevice,scannerParameters);
     
      
-     
-     [x,y,z] = format_Data(results.pointCloudCapturadaTratada);
-     show_convexhull(results.convHull_K2_triangulation,x,y,z,'FaceColor','cyan');
+     %plotando convexhull da point cloud obtida
+%      [x,y,z] = format_Data(results.pointCloudCapturadaTratada);
+%      show_convexhull(results.convHull_K2_triangulation,x,y,z,'FaceColor','cyan');
            
 
-     
-     
-     %visualizando imagem de profundidade
-     title('imagem RGB')
-     imshow(colorImage);
-     figure();
-        
-     title('imagem de profundidade')
-     imshow(255*(depthImage>255))
-
-        
         
      %plotando point cloud estática
-     plotPointCloud_Static(results.pointCloudCapturadaSemTratamento);
-     plotPointCloud_Static(results.pointCloudCapturadaTratada);
+%      plotPointCloud_Static(results.pointCloudCapturadaSemTratamento);
+%      plotPointCloud_Static(results.pointCloudCapturadaTratada);
 
      %Mostrando resultados:
       print_result_datas(results)
@@ -273,7 +295,7 @@ function getLuggageDimensionsWithScannerAproach()
         
         
     catch error
-        disp("Erro na função: GetLuggageDimensionsWithScannerAproach");
+        disp("Erro na função: getLuggageDimensionsWithScannerAproach");
         disp(error);
         delete(colorDevice);
         delete(depthDevice);
@@ -557,7 +579,7 @@ function [results] = pc_Object_Dimension_scanner(depthDevice,colorDevice, scanne
     method                   = scannerParameters.scanningMethod;
     roi_Slice                = scannerParameters.ROI;
     objectDetectionPrecision = scannerParameters.objectDetectionPrecision;
-    arduinoObj               = scannerParameters.arduinoController;
+    arduinoService               = scannerParameters.arduinoService;
 
     width=[0,0];                                     %x
     height=[0,0];                                    %y
@@ -575,16 +597,16 @@ function [results] = pc_Object_Dimension_scanner(depthDevice,colorDevice, scanne
     ptCloud_of_the_object_interated = NaN(size(xyzPoints,1)*30,size(xyzPoints,2));
     
     number_of_Obj_samples = 0;
-    startTimeSample       = 0;
+    startTimeSample       = tic;
     
     try
         
         disp("Iniciando Medida da Bagagem...");
         
         
-        arduinoObj.arduinoMatControl('run',arduinoObj);
+        arduinoService.arduinoMatControl(arduinoService, 'run');
         
-        samplePosition = 1;
+        samplePosition  = 1;
         while(break_flag<=10)
 
             %coletando frames da matriz de pontos
@@ -626,7 +648,7 @@ function [results] = pc_Object_Dimension_scanner(depthDevice,colorDevice, scanne
         tempo_amostragem = toc(startTimeSample);
         
         
-        arduinoObj.arduinoMatControl('stop',arduinoObj);
+        arduinoService.arduinoMatControl(arduinoService, 'stop');
         
         
         ptCloud_of_the_object_interated = ptCloud_of_the_object_interated(~isnan(ptCloud_of_the_object_interated(:,1)),~isnan(ptCloud_of_the_object_interated(1,:)));
@@ -681,33 +703,33 @@ function [results] = pc_Object_Dimension_scanner(depthDevice,colorDevice, scanne
         tempo_medida_OMBB3D = toc(inicio_tempo_medida_OMBB3D);
 
 
-        disp("As dimensões para cada método são [largura X altura X profundidade]]:");
-        
-        disp("mensurement_AABB:")
-        disp(" ")
-        volume_AABB = (Width_AABB*Hight_AABB*Depth_AABB)/100^3;
-        disp(Width_AABB + " X " + Hight_AABB + " X " + Depth_AABB + " | " + volume_AABB);
-        
-        disp(" ")
-        disp("mensurement_OMBB:")
-        disp(" ")
-        disp(widthMBB + " X " +  heightMBB + " X " + depthMBB + " | " + volume_MBB/100^3);
-        
-        disp(" ")
-        disp("mensurement_OMBB_3D:")
-        disp(" ")
-        disp(width_OMBB3D + " X " + height_OMBB3D + " X " + depth_OMBB3D + " | " + volume_OMBB3D);
-        disp(" ")
-        
-        tempo_de_flag = 6;
-        
-        disp("O tempo de amostragem foi: " + (tempo_amostragem-tempo_de_flag) + "s"); % a contagem de flag demora 6 segundos
-        disp("O tempo de tratamento da ptCloud foi: " + tempo_tratamento_ptCloud + "s");
-        disp("O tempo de medida com AABB foi: " + (tempo_medida_AABB + (tempo_amostragem-tempo_de_flag) + tempo_tratamento_ptCloud) + "s");
-        disp("O tempo de medida com OMBB foi: " + (tempo_medida_OMBB + (tempo_amostragem-tempo_de_flag) + tempo_tratamento_ptCloud)+ "s");
-        disp("O tempo de medida com OMBB 3D foi: " + (tempo_medida_OMBB3D + (tempo_amostragem-tempo_de_flag) + tempo_tratamento_ptCloud) + "s");
-        disp("A quantidade de amostras foi: " + number_of_Obj_samples);
-        
+%         disp("As dimensões para cada método são [largura X altura X profundidade]]:");
+%         
+%         disp("mensurement_AABB:")
+%         disp(" ")
+%         volume_AABB = (Width_AABB*Hight_AABB*Depth_AABB)/100^3;
+%         disp(Width_AABB + " X " + Hight_AABB + " X " + Depth_AABB + " | " + volume_AABB);
+%         
+%         disp(" ")
+%         disp("mensurement_OMBB:")
+%         disp(" ")
+%         disp(widthMBB + " X " +  heightMBB + " X " + depthMBB + " | " + volume_MBB/100^3);
+%         
+%         disp(" ")
+%         disp("mensurement_OMBB_3D:")
+%         disp(" ")
+%         disp(width_OMBB3D + " X " + height_OMBB3D + " X " + depth_OMBB3D + " | " + volume_OMBB3D);
+%         disp(" ")
+%         
+%         tempo_de_flag = 6;
+%         
+%         disp("O tempo de amostragem foi: " + (tempo_amostragem-tempo_de_flag) + "s"); % a contagem de flag demora 6 segundos
+%         disp("O tempo de tratamento da ptCloud foi: " + tempo_tratamento_ptCloud + "s");
+%         disp("O tempo de medida com AABB foi: " + (tempo_medida_AABB + (tempo_amostragem-tempo_de_flag) + tempo_tratamento_ptCloud) + "s");
+%         disp("O tempo de medida com OMBB foi: " + (tempo_medida_OMBB + (tempo_amostragem-tempo_de_flag) + tempo_tratamento_ptCloud)+ "s");
+%         disp("O tempo de medida com OMBB 3D foi: " + (tempo_medida_OMBB3D + (tempo_amostragem-tempo_de_flag) + tempo_tratamento_ptCloud) + "s");
+%         disp("A quantidade de amostras foi: " + number_of_Obj_samples);
+%         
         results = Results;
         
         results.Height                            = heightMBB;
@@ -917,10 +939,10 @@ end
 
 %o processo é feito em dois passos:
 %   1- corta o fundo usando a medida conhecida background_Distance
-%   2- pega o ponto da matriz obtida na amostragem e reflete cria um ponto 
-%      no mesmo xy so que z == background_distance.
-%      isso vai gerar uma superfície para a base e permitir que o convexhull 
-%      obtenha volume total do objeto
+%   2- pega o ponto da matriz obtida na amostragem e reflete na base (cria um ponto 
+%      no mesmo xy so que z == background_distance).
+%      isso vai gerar uma superfície para a base e auxiliar o convexhull 
+%      a obter o volume total do objeto
 function [xyzPoints_result] = ptCloud_processing(ptCloud, background_Distance, cut_value)
     
     xyzPoints = get_ptCloud_matrix(ptCloud);
@@ -1054,7 +1076,7 @@ function [height,width,depth,volume, rotmat,cornerpoints,surface] = get_dimensio
    %OMBB 3D
    [rotmat,cornerpoints,volume,surface] = minboundbox(double(ptCloud(:,1)),double(ptCloud(:,2)),double(ptCloud(:,3)),metric,level); 
 
-   plot_OMBB_3D_on_ptCloud(ptCloud,cornerpoints);
+   %plot_OMBB_3D_on_ptCloud(ptCloud,cornerpoints);
    
    [height,width,depth] = compute_dimentions_OMBB3D(cornerpoints);
    
@@ -1062,14 +1084,17 @@ end
 
 
 function [height,width,depth] = compute_dimentions_OMBB3D(cornerpoints)
+
     Mensurement1 = sqrt(((cornerpoints(1,1)-cornerpoints(2,1))^2+(cornerpoints(1,2)-cornerpoints(2,2))^2+(cornerpoints(1,3)-cornerpoints(2,3))^2))*100;
     Mensurement2 = sqrt(((cornerpoints(2,1)-cornerpoints(3,1))^2+(cornerpoints(2,2)-cornerpoints(3,2))^2+(cornerpoints(2,3)-cornerpoints(3,3))^2))*100;
     Mensurement3 = sqrt(((cornerpoints(1,1)-cornerpoints(5,1))^2+(cornerpoints(1,2)-cornerpoints(5,2))^2+(cornerpoints(1,3)-cornerpoints(5,3))^2))*100;
     
     mensurements = sort([ Mensurement1 Mensurement2 Mensurement3]);
+    
     height = mensurements(3);
-    width = mensurements(2);
-    depth = mensurements(1);
+    width  = mensurements(2);
+    depth  = mensurements(1);
+    
 end
 
 
