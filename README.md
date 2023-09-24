@@ -35,5 +35,5 @@ A principal função é realizar medidas de bagagens aeroportuárias. Para tanto
 
 ### Interface de usuário
 
-![user UI](./icons/to/ui_LuggageScannerSoftware.png "interface de usuário")
+![user UI](./icons/ui_LuggageScannerSoftware.png "interface de usuário")
 
